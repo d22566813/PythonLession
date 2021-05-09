@@ -21,6 +21,9 @@ from utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords,
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
+import pafy
+from utils.datasets import LoadStreams, LoadImages, LoadWebcam
+from PIL import Image, ImageDraw, ImageFont
 
 
 def set_parser():
@@ -42,6 +45,14 @@ def set_parser():
                         help='augmented inference')
     parser.add_argument('--update', action='store_true',
                         help='update all models')
+    parser.add_argument('--agnostic-nms', action='store_true',
+                        help='class-agnostic NMS')
+    parser.add_argument("--camera", action="store",
+                        dest="cam", type=int, default="-1")
+    parser.add_argument('--weights', nargs='+', type=str,
+                        default='./weights/yolov5s.pt', help='model.pt path(s)')
+    parser.add_argument(
+        '--classes', default=[0], type=int, help='filter by class: --class 0, or --class 0 2 3')
 
     return parser.parse_args()
 
@@ -136,8 +147,50 @@ class Person_detect():
         return np.array(bbox_xywh), confs, clas, xy
 
 
+def draw_boxes(img, bbox, cls_conf, offset=(0, 0)):
+    for i, box in enumerate(bbox):
+        x1, y1, x2, y2 = [int(i) for i in box]
+        x1 += offset[0]
+        x2 += offset[0]
+        y1 += offset[1]
+        y2 += offset[1]
+        # box text and bar
+        # id = int(identities[i]) if identities is not None else 0
+        color = (int(10*256), int(10*256), int(10*256))
+        label = '{}{}'.format("conf:", cls_conf)
+        t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
+        cv2.rectangle(
+            img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
+        cv2.putText(img, label, (x1, y1 +
+                                 t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
+    return img
+
+
+def put_text_to_cv2_img_with_pil(cv2_img):
+    # cv2和PIL中颜色的hex码的储存顺序不同，需转RGB模式
+    pil_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+    # Image.fromarray()将数组类型转成图片格式，与np.array()相反
+    pilimg = Image.fromarray(pil_img)
+
+    # 将图片转成cv2.imshow()可以显示的数组格式
+    return cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
+
+
 if __name__ == '__main__':
-    person_detect = Person_detect(
-        source='/media/zengwb/PC/Dataset/ReID-dataset/channel1/1.mp4')
-    with torch.no_grad():
-        person_detect.detect()
+    person_detect = Person_detect(opt=set_parser(),
+                                  source='/media/zengwb/PC/Dataset/ReID-dataset/channel1/1.mp4')
+    video = pafy.new(
+        "https://www.youtube.com/watch?v=wCcMcaiRbhM&list=PL-Ni-1OtjEdLtQRpD-6r9AsD3P_6MLpgv&index=66")
+    play = video.getbest(preftype="mp4")
+    stream = cv2.VideoCapture(play.url)
+    while True:
+        (grabbed, frame) = stream.read()
+        cv2.imshow("Output Frame", frame)
+    # with torch.no_grad():
+    #     dataset = LoadWebcam(play.url, img_size=640)
+    #     for video_path, img, ori_img, vid_cap in dataset:
+        # bbox_xywh, cls_conf, cls_ids, xy = person_detect.detect(
+        #     video_path, img, ori_img, vid_cap)
+        # ori_img = draw_boxes(ori_img, bbox_xywh, cls_conf)
+        # cv2.imshow("Output Frame", put_text_to_cv2_img_with_pil(ori_img))
