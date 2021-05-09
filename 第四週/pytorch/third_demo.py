@@ -11,14 +11,14 @@ def parse_args():
     # yolov5
     parser.add_argument('--weights', nargs='+', type=str,
                         default='./weights/yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--img-size', type=int, default=960,
+    parser.add_argument('--img-size', type=int, default=640,
                         help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.4, help='object confidence threshold')
+                        default=0.8, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float,
                         default=0.5, help='IOU threshold for NMS')
     parser.add_argument(
-        '--classes', default=[0], type=int, help='filter by class: --class 0, or --class 0 2 3')
+        '--classes', default=2, type=int, help='filter by class: --class 0, or --class 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true',
                         help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true',
@@ -41,8 +41,8 @@ model.to(device)
 
 stream_url = [
     "https://www.youtube.com/watch?v=wCcMcaiRbhM&list=PL-Ni-1OtjEdLtQRpD-6r9AsD3P_6MLpgv&index=66",
-    "https://www.youtube.com/watch?v=HUbQTGraucg",
-    "https://www.youtube.com/watch?v=EkrZJrYqWFE"
+    # "https://www.youtube.com/watch?v=HUbQTGraucg",
+    # "https://www.youtube.com/watch?v=EkrZJrYqWFE"
 ]
 # video = pafy.new(
 #     "https://www.youtube.com/watch?v=wCcMcaiRbhM&list=PL-Ni-1OtjEdLtQRpD-6r9AsD3P_6MLpgv&index=66")
