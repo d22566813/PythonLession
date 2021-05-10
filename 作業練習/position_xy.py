@@ -2,6 +2,7 @@ width = 5
 height = 5
 y = 0
 output = ""
+
 while y < height:
     x = 0
     while x < width:

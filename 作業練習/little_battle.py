@@ -202,7 +202,7 @@ def int_try_parse(value):  # return value (int or string), canParse or not (bool
 
 
 # enter recruit x y position use in recruit_stage
-def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, game_map):
+def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, enemy, game_map):
     while True:
         input_content = input(
             "You want to recruit a {}.Enter two integers as format 'x y' to place your army.\n".format(
@@ -253,7 +253,7 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, gam
                         else:
                             game_map.player2 = player
                         player, game_map = recruit_stage(
-                            player, game_map, False)
+                            player, enemy, game_map, False)
                         return player, game_map
                     i += 1
                 #-------------edge case---------------#
@@ -268,7 +268,7 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, gam
             print("Sorry, invalid input Try again.\n")
 
 
-# check home 4 position is empty (checkArray,home_4_position_list,check_result_list)
+# check home 4 position is empty
 def check_home_place_empty(armies, check_p, check_p_list):
     for p in armies:
         if (p.x == check_p[0].x and p.y == check_p[0].y) and check_p_list[0]:
@@ -283,7 +283,7 @@ def check_home_place_empty(armies, check_p, check_p_list):
 
 
 # recruit_stage return player_info,map_info
-def recruit_stage(player, game_map, show_player_msg):
+def recruit_stage(player, enemy, game_map, show_player_msg):
     if show_player_msg:
         print("+++"+player.name+"'s Stage: Recruit Armies+++")
 
@@ -305,15 +305,12 @@ def recruit_stage(player, game_map, show_player_msg):
     ]
     # HomeBase 4 Position is Empty
     check_p_empty_list = [True, True, True, True]
+    #---------check player armies----------#
+    armies = player.spearman+player.archer+player.knight+player.scout + \
+        enemy.spearman+enemy.archer+enemy.knight+enemy.scout
 
     check_p_empty_list = check_home_place_empty(
-        player.spearman, check_home_p, check_p_empty_list)
-    check_p_empty_list = check_home_place_empty(
-        player.archer, check_home_p, check_p_empty_list)
-    check_p_empty_list = check_home_place_empty(
-        player.knight, check_home_p, check_p_empty_list)
-    check_p_empty_list = check_home_place_empty(
-        player.scout, check_home_p, check_p_empty_list)
+        armies, check_home_p, check_p_empty_list)
 
     check_place = True
 
@@ -350,7 +347,7 @@ def recruit_stage(player, game_map, show_player_msg):
             #---------positive case----------#
             else:
                 player, game_map = show_recruit_msg("Spearman", check_home_p,
-                                                    check_p_empty_list, player, game_map)
+                                                    check_p_empty_list, player, enemy, game_map)
                 return player, game_map
         elif input_content == 'A':
             #------------edge case-----------#
@@ -359,7 +356,7 @@ def recruit_stage(player, game_map, show_player_msg):
             #---------positive case----------#
             else:
                 player, game_map = show_recruit_msg("Archer", check_home_p,
-                                                    check_p_empty_list, player, game_map)
+                                                    check_p_empty_list, player, enemy, game_map)
             return player, game_map
         elif input_content == 'K':
             #------------edge case-----------#
@@ -368,7 +365,7 @@ def recruit_stage(player, game_map, show_player_msg):
             #---------positive case----------#
             else:
                 player, game_map = show_recruit_msg("Knight", check_home_p,
-                                                    check_p_empty_list, player, game_map)
+                                                    check_p_empty_list, player, enemy, game_map)
                 return player, game_map
         elif input_content == 'T':
             #------------edge case-----------#
@@ -377,7 +374,7 @@ def recruit_stage(player, game_map, show_player_msg):
             #---------positive case----------#
             else:
                 player, game_map = show_recruit_msg("Scout", check_home_p,
-                                                    check_p_empty_list, player, game_map)
+                                                    check_p_empty_list, player, enemy, game_map)
                 return player, game_map
         #-------------negative case---------------#
         else:
@@ -385,8 +382,107 @@ def recruit_stage(player, game_map, show_player_msg):
     # endregion
 
 
-def move_stage():
-    print("")
+def armies_info(player, army_type, player_already_move):
+    armies_info = ""
+    armies_count = 0
+    armies = []
+    if army_type == "Spearman":
+        armies = player.spearman
+    elif army_type == "Archer":
+        armies = player.archer
+    elif army_type == "Scout":
+        armies = player.scout
+    elif army_type == "Knight":
+        armies = player.knight
+
+    for p in armies:
+        check = True
+        for a_p in player_already_move:
+            if p.x == a_p.x and p.y == a_p.y:
+                check = False
+                break
+        if check:
+            if armies_count == 0:
+                armies_info = armies_info+"({},{})".format(p.x, p.y)
+            else:
+                armies_info = armies_info+", ({},{})".format(p.x, p.y)
+        armies_count += 1
+    armies_info = "{}: {}\n".format(army_type, armies_info)
+    return armies_info
+
+
+def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
+    if show_player_msg:
+        print("==={}'s Stage: Move Armies===\n".format(player.name))
+
+    #------------check player army exist----------#
+    if len(player.spearman) == 0 and len(player.archer) == 0 and len(player.knight) == 0 and len(player.scout) == 0:
+        print("No Army to Move: next turn\n")
+    else:
+        print("Armies to Move\n")
+        armies_info_show = ""
+        for army_type in ["Spearman", "Archer", "Knight", "Scout"]:
+            armies_info_show = armies_info_show + \
+                armies_info(player, army_type, player_already_move)
+        print(armies_info_show)
+        input_content = input(
+            "\nEnter four integers as a format 'x0 y0 x1 y1' to represent move unit from (x0, y0) to (x1, y1) ir 'NO' to end this turn.\n")
+        #-------------edge case------------------#
+        if input_content == 'DIS':
+            game_map.draw_map()
+        elif input_content == 'PRIS':
+            show_recruit_price()
+        elif input_content == 'QUIT':
+            exit()
+        elif input_content == 'NO':
+            return player, enemy, game_map
+        #-------------positive case------------------#
+        elif ' ' in input_content:
+            input_content_p_xy = input_content.split(' ')
+            if len(input_content_p_xy) == 4:
+                if input_content_p_xy[0].isdigit() and input_content_p_xy[1].isdigit() and input_content_p_xy[2].isdigit() and input_content_p_xy[3].isdigit():
+                    print("")
+        # region
+        # 起始點 x0 y0 是否玩家為移動的兵中有此座標
+        # t: 有
+        #    已知道是什麼兵種
+        #     終點的有效條件
+        #     1.不可以相同
+        #     2.不可以再地圖外
+        #     3.不可以在自己的兵上
+        #     4.不可以在自己的基地
+        #     5.終點與起點只能差一步 （偵察兵 兩步）
+        #        t:
+        #             1.You have moved < Spearman/Archer/Knight/Scout > from (x0, y0) to(x1, y1).
+        #             2.move result
+        #                volid move 的條件
+        #                     1.踩到敵人基地
+        #                        1.問指揮官名字
+        #                         2.印出恭喜
+        #                         3.exist()
+        #                     2.兵死掉了
+        #                        1.只有他死掉
+        #                            player.spearman.remove((x0, y0))
+        #                         2.自己死掉敵人也死掉
+        #                            player.spearman.remove((x0, y0))
+        #                             enemy.spearman.remove((x0, y0))
+        #                     3.兵沒死
+        #                        1.到新的座標
+        #                            player.spearman[0]. x跟y改成新座標
+        #                             player_already_move.append(x1, y1)
+
+        #             3.move_stage(player, player_already_move, enemy, game_map,False)
+
+        #         f: Invalid move. Try again
+        #             move_stage(player, enemy, game_map, False)
+        # f: Invalid move. Try again
+        #     move_stage(player, enemy, game_map, False)
+        # endregion
+        elif input_content == 'NO':
+            return player, enemy, game_map
+        #-------------negative case---------------#
+        else:
+            print("Invalid move. Try again.\n")
 
 
 if __name__ == "__main__":
@@ -427,14 +523,31 @@ if __name__ == "__main__":
     print("(enter PRIS to display the price list)\n\n")
     # -----------------------------------#
 
-    # ----------Show Year-----------#
-    show_year(year)
-    # -----------------------------------#
+    while True:
+        # ----------Show Year-----------#
+        show_year(year)
+        # -----------------------------------#
 
-    # ----------Stage_Recruit-----------#
-    player1, game_map = recruit_stage(player1, game_map, True)
-    # -----------------------------------#
+        # ----------Player1 Stage_Recruit-----------#
+        player1, game_map = recruit_stage(
+            player1, player2, game_map, True)
+        # -----------------------------------#
 
-    # ----------Stage_Move-----------#
-    # move_stage(player1, game_map)
-    # -----------------------------------#
+        # ----------Player1 Stage_Move-----------#
+        player1, player2, game_map = move_stage(
+            player1, player2, game_map, [], True)
+        # -----------------------------------#
+
+        # ----------Player2 Stage_Recruit-----------#
+        player2, game_map = recruit_stage(
+            player2, player1, game_map, True)
+        # -----------------------------------#
+
+        # ----------Player2 Stage_Move-----------#
+        player2, player1, game_map = move_stage(
+            player2, player1, game_map, [], True)
+        # -----------------------------------#
+
+        # ----------Year Pass-----------#
+        year += 1
+        # ------------------------------#
