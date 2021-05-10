@@ -126,10 +126,8 @@ class Player:
         self.scout = scout
         self.home = home
 
-# help anaylize map txt fuction
 
-
-def set_assets(assets):
+def set_assets(assets):  # help anaylize map txt fuction
     p_list = []
     p = Position("", "")
     for a in assets:
@@ -141,10 +139,8 @@ def set_assets(assets):
             p = Position("", "")
     return p_list
 
-# loading map message by txt
 
-
-def load_config_file(filepath):
+def load_config_file(filepath):  # loading map message by txt
     # It should return width, height, waters, woods, foods, golds based on the file
     # Complete the test driver of this function in file_loading_test.py
     width, height = 0, 0
@@ -181,39 +177,31 @@ def load_config_file(filepath):
     return width, height, waters, woods, foods, golds
 
 
-# show recruit price list
-def show_recruit_price():
+def show_recruit_price():  # show recruit price list
     print("Recruit Prices:")
     print("  Spearman (S) -1W, 1F")
     print("  Archer (A) -1W, 1G")
     print("  Knight (K) -1F, 1G")
     print("  Scout (T) -1W, 1F, 1G")
 
-# show year each round need to show
 
-
-def show_year(year):
+def show_year(year):  # show year each round need to show
     print("-Year "+str(year)+"-\n")
 
-# show player assets - Wood , Gold , Food
 
-
-def show_asstes(palyer):
+def show_asstes(palyer):  # show player assets - Wood , Gold , Food
     print("[Your Asset: Wood - {} Food - {} Gold - {}]\n".format(palyer.wood,
                                                                  palyer.food, palyer.gold))
 
-# string to int return value (int or string), canParse or not (boolean)
 
-
-def int_try_parse(value):
+def int_try_parse(value):  # return value (int or string), canParse or not (boolean)
     try:
         return int(value), True
     except ValueError:
         return value, False
 
+
 # enter recruit x y position use in recruit_stage
-
-
 def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, game_map):
     while True:
         input_content = input(
@@ -279,9 +267,8 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, gam
         else:
             print("Sorry, invalid input Try again.\n")
 
+
 # check home 4 position is empty (checkArray,home_4_position_list,check_result_list)
-
-
 def check_home_place_empty(armies, check_p, check_p_list):
     for p in armies:
         if (p.x == check_p[0].x and p.y == check_p[0].y) and check_p_list[0]:
@@ -294,9 +281,8 @@ def check_home_place_empty(armies, check_p, check_p_list):
             check_p_list[3] = False
     return check_p_list
 
+
 # recruit_stage return player_info,map_info
-
-
 def recruit_stage(player, game_map, show_player_msg):
     if show_player_msg:
         print("+++"+player.name+"'s Stage: Recruit Armies+++")
