@@ -4,15 +4,15 @@ import sys
 
 
 class BattleMap:
-    def __init__(self, width, height, waters, woods, foods, golds, h1, h2):
+    def __init__(self, width, height, waters, woods, foods, golds, player1, player2):
         self.width = width
         self.height = height
         self.waters = waters
         self.woods = woods
         self.foods = foods
         self.golds = golds
-        self.h1 = h1
-        self.h2 = h2
+        self.player1 = player1
+        self.player2 = player2
 
     def draw_map_assets(self, icon, h_s, x, y, empty):
         if empty:
@@ -24,6 +24,22 @@ class BattleMap:
                 assets = self.foods
             elif icon == 'GG':
                 assets = self.golds
+            elif icon == 'S1':
+                assets = self.player1.spearman
+            elif icon == 'A1':
+                assets = self.player1.archer
+            elif icon == 'K1':
+                assets = self.player1.knight
+            elif icon == 'T1':
+                assets = self.player1.scout
+            elif icon == 'S2':
+                assets = self.player2.spearman
+            elif icon == 'A2':
+                assets = self.player2.archer
+            elif icon == 'K2':
+                assets = self.player2.knight
+            elif icon == 'T2':
+                assets = self.player2.scout
             for a in assets:
                 if a.x == x and a.y == y:
                     h_s = h_s+icon
@@ -60,15 +76,18 @@ class BattleMap:
                 h_s = h_s+"|"
                 empty = True
                 # player 1 Base
-                if self.h1.x == x and self.h1.y == y:
+                if self.player1.home.x == x and self.player1.home.y == y:
                     h_s = h_s+"H1"
                     empty = False
                 # player 2 Base
-                elif self.h2.x == x and self.h2.y == y:
+                elif self.player2.home.x == x and self.player2.home.y == y:
                     h_s = h_s+"H2"
                     empty = False
                 # assets Icon
-                for icon in ['~~', 'WW', 'FF', 'GG']:
+                for icon in ['~~', 'WW', 'FF', 'GG',
+                             'S1', 'A1', 'K1', 'T1',
+                             'S2', 'A2', 'K2', 'T2',
+                             ]:
                     h_s, empty = self.draw_map_assets(icon, h_s, x, y, empty)
                 # None Icon
                 if empty:
@@ -169,16 +188,81 @@ def show_year(year):
 
 
 def show_asstes(palyer):
-    print("[Your Asset: Wood - {} Food - {} Gold - {}]".format(palyer.wood,
-                                                               palyer.food, palyer.gold))
+    print("[Your Asset: Wood - {} Food - {} Gold - {}]\n".format(palyer.wood,
+                                                                 palyer.food, palyer.gold))
 
 
-def show_recruit_msg(recruit_type):
-    input_content = input(
-        "You want to recruit a {}.Enter two integers as format 'x y' to place your army.".format(
-            recruit_type)
-    )
-    input_xy = input_content.splt(' ')
+def int_try_parse(value):
+    try:
+        return int(value), True
+    except ValueError:
+        return value, False
+
+
+def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, game_map):
+    while True:
+        input_content = input(
+            "You want to recruit a {}.Enter two integers as format 'x y' to place your army.\n".format(
+                recruit_type)
+        )
+        #-------------edge case------------------#
+        if input_content == 'DIS':
+            game_map.draw_map()
+        elif input_content == 'PRIS':
+            show_recruit_price()
+        elif input_content == 'QUIT':
+            exit()
+        #------------------positive case------------------#
+        elif ' ' in input_content:
+            input_xy = input_content.split(' ')
+            #------------------positive case-----------#
+            input_x, input_x_is_int = int_try_parse(input_xy[0])
+            input_y, input_y_is_int = int_try_parse(input_xy[1])
+            if len(input_xy) == 2 and input_x_is_int and input_y_is_int:
+                input_p = Position(input_x, input_y)
+                i = 0
+                check_place_success = False
+                for check in check_p_empty_list:
+                    #-------------positive case---------------#
+                    if check and input_p.x == check_home_p[i].x and input_p.y == check_home_p[i].y:
+                        if recruit_type == "Spearman":
+                            player.wood = player.wood-1
+                            player.food = player.food-1
+                            player.spearman.append(input_p)
+                        elif recruit_type == "Archer":
+                            player.wood = player.wood-1
+                            player.gold = player.gold-1
+                            player.archer.append(input_p)
+                        elif recruit_type == "Knight":
+                            player.food = player.food-1
+                            player.gold = player.gold-1
+                            player.knight.append(input_p)
+                        elif recruit_type == "Scout":
+                            player.wood = player.wood-1
+                            player.food = player.food-1
+                            player.gold = player.gold-1
+                            player.scout.append(input_p)
+                        check_p_empty_list[i] = False
+                        check_place_success = True
+                        print("\nYou has recruited a {}.\n".format(recruit_type))
+                        if player.name == "Player 1":
+                            game_map.player1 = player
+                        else:
+                            game_map.player2 = player
+                        player, game_map = recruit_stage(
+                            player, game_map, False)
+                        return player, game_map
+                    i += 1
+                #-------------edge case---------------#
+                if not check_place_success:
+                    print(
+                        "You must place your newly recruited unit in an unoccupied position next to your home base. Try again.\n")
+            #-------------negative case---------------#
+            else:
+                print("Sorry, invalid input Try again.\n")
+        #-------------negative case---------------#
+        else:
+            print("Sorry, invalid input Try again.\n")
 
 
 def check_home_place_empty(armies, check_p, check_p_list):
@@ -194,14 +278,16 @@ def check_home_place_empty(armies, check_p, check_p_list):
     return check_p_list
 
 
-def recruit_stage(player, bt_map):
-    print("+++"+player.name+"'s Stage: Recruit Armies+++")
+def recruit_stage(player, game_map, show_player_msg):
+    if show_player_msg:
+        print("+++"+player.name+"'s Stage: Recruit Armies+++")
+
     show_asstes(player)
     #-------------check resource is enough-------------#
     # region
     if (player.wood == 0 and player.food == 0) or (player.wood == 0 and player.gold == 0) or (player.gold == 0 and player.food == 0):
         print('No resources to recruit any armies.')
-        return
+        return player, game_map
     # endregion
 
     #-------------check has place to recruit-------------#
@@ -212,7 +298,7 @@ def recruit_stage(player, bt_map):
         Position(player.home.x, player.home.y+1),
         Position(player.home.x, player.home.y-1)
     ]
-
+    # HomeBase 4 Position is Empty
     check_p_empty_list = [True, True, True, True]
 
     check_p_empty_list = check_home_place_empty(
@@ -232,7 +318,7 @@ def recruit_stage(player, bt_map):
 
     if check_place:
         print('No place to recruit any armies.')
-        return
+        return player, game_map
     # endregion
 
     #----------------recruit army-----------------------#
@@ -241,28 +327,56 @@ def recruit_stage(player, bt_map):
     while input_content != 'NO':
         input_content = input(
             "Which type of army to recruit, (enter) 'S', 'A', 'K', or 'T'? Ener 'NO' to end this stage.\n")
+
+        #-------------edge case------------------#
         if input_content == 'DIS':
-            bt_map.draw_map()
+            game_map.draw_map()
         elif input_content == 'PRIS':
             show_recruit_price()
         elif input_content == 'QUIT':
             exit()
         elif input_content == 'NO':
-            break
+            return player, game_map
+        #--------------positive case--------------#
         elif input_content == 'S':
-            show_recruit_msg("Spearman")
-            show_asstes(player)
+            #------------edge case-----------#
+            if player.wood == 0 or player.food == 0:
+                print("Insufficient resources. Try again.\n")
+            #---------positive case----------#
+            else:
+                player, game_map = show_recruit_msg("Spearman", check_home_p,
+                                                    check_p_empty_list, player, game_map)
+                return player, game_map
         elif input_content == 'A':
-            show_recruit_msg("Archer")
-            show_asstes(player)
+            #------------edge case-----------#
+            if player.wood == 0 or player.gold == 0:
+                print("Insufficient resources. Try again.\n")
+            #---------positive case----------#
+            else:
+                player, game_map = show_recruit_msg("Archer", check_home_p,
+                                                    check_p_empty_list, player, game_map)
+            return player, game_map
         elif input_content == 'K':
-            show_recruit_msg("Knight")
-            show_asstes(player)
+            #------------edge case-----------#
+            if player.gold == 0 or player.food == 0:
+                print("Insufficient resources. Try again.\n")
+            #---------positive case----------#
+            else:
+                player, game_map = show_recruit_msg("Knight", check_home_p,
+                                                    check_p_empty_list, player, game_map)
+                return player, game_map
         elif input_content == 'T':
-            show_recruit_msg("Scout")
-            show_asstes(player)
+            #------------edge case-----------#
+            if player.wood == 0 or player.food == 0 or player.gold == 0:
+                print("Insufficient resources. Try again.\n")
+            #---------positive case----------#
+            else:
+                player, game_map = show_recruit_msg("Scout", check_home_p,
+                                                    check_p_empty_list, player, game_map)
+                return player, game_map
+        #-------------negative case---------------#
         else:
-            print("Sorry, invalid input Try again.")
+            print("Sorry, invalid input Try again.\n")
     # endregion
 
 
@@ -288,7 +402,7 @@ if __name__ == "__main__":
 
     # ----------Map initial-----------#
     game_map = BattleMap(width, height, waters, woods,
-                         foods, golds, player1.home, player2.home)
+                         foods, golds, player1, player2)
     # -----------------------------------#
 
     # ----------Year initial-----------#
@@ -313,7 +427,7 @@ if __name__ == "__main__":
     # -----------------------------------#
 
     # ----------Stage_Recruit-----------#
-    recruit_stage(player1, game_map)
+    player1, game_map = recruit_stage(player1, game_map, True)
     # -----------------------------------#
 
     # ----------Stage_Move-----------#
