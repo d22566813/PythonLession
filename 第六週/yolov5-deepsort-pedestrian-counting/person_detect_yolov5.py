@@ -26,6 +26,67 @@ from utils.datasets import LoadStreams, LoadImages, LoadWebcam
 from PIL import Image, ImageDraw, ImageFont
 
 
+class Detector(baseDet):
+
+    def __init__(self):
+        super(Detector, self).__init__()
+        self.init_model()
+        self.build_config()
+
+    def init_model(self):
+
+        self.weights = 'weights/yolov5s.pt'
+        self.device = '0' if torch.cuda.is_available() else 'cpu'
+        self.device = select_device(self.device)
+        model = attempt_load(self.weights, map_location=self.device)
+        model.to(self.device).eval()
+        model.half()
+        # torch.save(model, 'test.pt')
+        self.m = model
+        self.names = model.module.names if hasattr(
+            model, 'module') else model.names
+
+    def preprocess(self, img):
+
+        img0 = img.copy()
+        img = letterbox(img, new_shape=self.img_size)[0]
+        img = img[:, :, ::-1].transpose(2, 0, 1)
+        img = np.ascontiguousarray(img)
+        img = torch.from_numpy(img).to(self.device)
+        img = img.half()  # 半精度
+        img /= 255.0  # 图像归一化
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+
+        return img0, img
+
+    def detect(self, im):
+
+        im0, img = self.preprocess(im)
+
+        pred = self.m(img, augment=False)[0]
+        pred = pred.float()
+        pred = non_max_suppression(pred, self.threshold, 0.4)
+
+        pred_boxes = []
+        for det in pred:
+
+            if det is not None and len(det):
+                det[:, :4] = scale_coords(
+                    img.shape[2:], det[:, :4], im0.shape).round()
+
+                for *x, conf, cls_id in det:
+                    lbl = self.names[int(cls_id)]
+                    if not lbl in ['person', 'car', 'truck']:
+                        continue
+                    x1, y1 = int(x[0]), int(x[1])
+                    x2, y2 = int(x[2]), int(x[3])
+                    pred_boxes.append(
+                        (x1, y1, x2, y2, lbl, conf))
+
+        return im, pred_boxes
+
+
 def set_parser():
     parser = argparse.ArgumentParser()
     # parser.add_argument('--source', type=str, default='/media/zengwb/PC/Dataset/ReID-dataset/channel1/1.mp4',
@@ -177,6 +238,42 @@ def put_text_to_cv2_img_with_pil(cv2_img):
     return cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
 
 
+def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True):
+    # Resize image to a 32-pixel-multiple rectangle https://github.com/ultralytics/yolov3/issues/232
+    shape = img.shape[:2]  # current shape [height, width]
+    if isinstance(new_shape, int):
+        new_shape = (new_shape, new_shape)
+
+    # Scale ratio (new / old)
+    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+    if not scaleup:  # only scale down, do not scale up (for better test mAP)
+        r = min(r, 1.0)
+
+    # Compute padding
+    ratio = r, r  # width, height ratios
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - \
+        new_unpad[1]  # wh padding
+    if auto:  # minimum rectangle
+        dw, dh = np.mod(dw, 64), np.mod(dh, 64)  # wh padding
+    elif scaleFill:  # stretch
+        dw, dh = 0.0, 0.0
+        new_unpad = (new_shape[1], new_shape[0])
+        ratio = new_shape[1] / shape[1], new_shape[0] / \
+            shape[0]  # width, height ratios
+
+    dw /= 2  # divide padding into 2 sides
+    dh /= 2
+
+    if shape[::-1] != new_unpad:  # resize
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    img = cv2.copyMakeBorder(
+        img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
+    return img, ratio, (dw, dh)
+
+
 if __name__ == '__main__':
     person_detect = Person_detect(opt=set_parser(),
                                   source='/media/zengwb/PC/Dataset/ReID-dataset/channel1/1.mp4')
@@ -184,13 +281,21 @@ if __name__ == '__main__':
         "https://www.youtube.com/watch?v=wCcMcaiRbhM&list=PL-Ni-1OtjEdLtQRpD-6r9AsD3P_6MLpgv&index=66")
     play = video.getbest(preftype="mp4")
     stream = cv2.VideoCapture(play.url)
+
+    detect = Detector()
     while True:
         (grabbed, frame) = stream.read()
+        frame = np.stack(frame, 0)
+        detect.detect(frame)
         cv2.imshow("Output Frame", frame)
+        if(cv2.waitKey(10) == 27):
+            break
+
+    cv2.waitKey(10)
     # with torch.no_grad():
     #     dataset = LoadWebcam(play.url, img_size=640)
     #     for video_path, img, ori_img, vid_cap in dataset:
-        # bbox_xywh, cls_conf, cls_ids, xy = person_detect.detect(
-        #     video_path, img, ori_img, vid_cap)
-        # ori_img = draw_boxes(ori_img, bbox_xywh, cls_conf)
-        # cv2.imshow("Output Frame", put_text_to_cv2_img_with_pil(ori_img))
+    #         bbox_xywh, cls_conf, cls_ids, xy = person_detect.detect(
+    #             video_path, img, ori_img, vid_cap)
+    #         ori_img = draw_boxes(ori_img, bbox_xywh, cls_conf)
+    #         cv2.imshow("Output Frame", put_text_to_cv2_img_with_pil(ori_img))
