@@ -410,126 +410,103 @@ def armies_info(player, army_type, player_already_move):
     armies_info = "{}: {}\n".format(army_type, armies_info)
     return armies_info
 
-def has_armies():
-    has_armies_in_list = False
-    armies_info = ""
-    armies += player.spearman + player.archer + player.scout + player.knight
-    for a in armies:
-        if a.x == input_content_p_xy[0] and a.y == input_content_p_xy[1]:
-            has_armies_in_list = True
-            break
-    return has_armies_in_list
 
-def invalid_condition():
-    condition = False
-    if not has_armies_in_list and input_content_p_xy[2] != player.home.x and input_content_p_xy[3] != player.home.y:
-        if input_content_p_xy[2] <= width or input_content_p_xy[3] <= height:
-           if input_content_p_xy[2] != input_content_p_xy[0] and input_content_p_xy[3] != input_content_p_xy[1]:
-               condition = True
-    return condition
-
-def available_destination():    
-    armies_sak = player.spearman + player.archer + player.knight
-    armies_t = player.scout
-    good_destination = False
-    final_destination = False
-    for point in armies_sak:
-        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
-            if input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1:
-                good_destination = True
-                if good_destination and condition:
-                    final_destination = True
-                    if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
-                        
-    for point in armies_t:
-        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
-            if (input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1) \
-                or (input_content_p_xy[2] - input_content_p_xy[0] == 2 and input_content_p_xy[3] - input_content_p_xy[1] == 2):
-                if good_destination and condition:
-                    final_destination = True
-    return final_destination 
-        
-def army_type(player):
-    if input_content_p_xy[0] == player.spearman.x and input_content_p_xy[1] == player.spearman.y:
-         army_type = "Spearman"
-    if input_content_p_xy[0] == player.archer.x and input_content_p_xy[1] == player.archer.y:
-         army_type = "Archer"
-    if input_content_p_xy[0] == player.scout.x and input_content_p_xy[1] == player.scout.y:
-         army_type = "Scout"
-    if input_content_p_xy[0] == player.knight.x and input_content_p_xy[1] == player.knight.y:
-         army_type = "Knight"
-    return army_type
-
-def lose_armies(enemy):
-    lose_army = True
-    for point in BattleMap.waters:
-        if input_content_p_xy[2].x == BattleMap.waters.x and input_content_p_xy[3].y == BattleMap.waters.y:
-            lose_army = False
-    enemy_armies = enemy.spearman + enemy.archer + enemy.scout + enemy.knight
-    for point in enemy_armies:
-        if input_content_p_xy[2].x
-
-def win():
-    if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
+def move_step_available(army_type, start, end):
+    move_step = abs(end-start)
+    if army_type == 'scout':
+        if not(move_step <= 2):
+            return False
+        else:
+            return True
+    else:
+        if not(move_step == 1):
+            return False
+        else:
+            return True
 
 
-def has_armies():
-    has_armies_in_list = False
-    armies_info = ""
-    armies += player.spearman + player.archer + player.scout + player.knight
-    for a in armies:
-        if a.x == input_content_p_xy[0] and a.y == input_content_p_xy[1]:
-            has_armies_in_list = True
-            break
-    return has_armies_in_list
+def available_destination(start_position, end_position, battle_map, player_already_move, player, enemy):
+    has_armies, army_type, = has_armies(player, start_position)
+    #  no army on that position
+    if has_armies:
+        return False, army_type
+
+    #   out of map_range
+    if not(end_position.x <= (battle_map.width-1) and end_position.y <= (battle_map.height-1)):
+        return False, army_type
+
+    #   not move , not on other armies position
+    armis = player.spearman + player.archer + player.knight+player.scout
+    #   not on home_base
+    armis.append(player.home)
+    if end_position in armis:
+        return False, army_type
+
+    # 每回合只能移動一次
+
+    # 兵移動到水或是被克制的兵種
+    # Scout 移動中間一步 也消失
+    # 自己兵消失
+    # 印出 We lost the army <Spearman/Archer/Knight/Scout> due to your command!
+
+    # 兵移動到同兵種
+    # 兩方兵消失
+    # Scout 移動中間一步 也消失
+    # 印出 We destroyed the enemy <Spearman/Archer/Knight/Scout> with massive loss!
+
+    # 兵移動到克制兵種
+    # 敵方兵消失
+    # 印出 Great! We defeated the enemy <Spearman/Archer/Knight/Scout>!
+
+    # 兵移動到資源
+    # 資源消失
+    # Scout如兩步都蒐集到資源 印兩次
+    # 印出Good. We collected 2 <Wood/Food/Gold>.
+
+    # 兵移動到敵人主堡
+    # 印出 The army <Spearman/Archer/Knight/Scout> captured the enemy’s capital.
+    # What’s your name, commander? 任何輸入當作名字
+    # 印出 ***Congratulation! Emperor <name> unified the country in <year>.***
+    # 結束遊戲
+
+    #   go up or down
+    if start_position.x == end_position.x:
+        if move_step_available(army_type, end_position.y, start_position.y):
+            # 兵移動到敵人主堡
+            # 兵移動到資源
+            # 兵移動到克制兵種
+            # 兵移動到同兵種
+            # 兵移動到水或是被克制的兵種
+
+            # if army_type == "scout":
+
+            # else:
+            return True, army_type
+        else:
+            return False, army_type
+    #   go left or right
+    elif start_position.y == end_position.y:
+        if move_step_available(army_type, end_position.x, start_position.x):
+            return True, army_type
+        else:
+            return False, army_type
+    #   not diagonal
+    else:
+        return False, army_type
 
 
-def invalid_condition():
-    condition = False
-    if not has_armies_in_list and input_content_p_xy[2] != player.home.x and input_content_p_xy[3] != player.home.y:
-        if input_content_p_xy[2] <= width or input_content_p_xy[3] <= height:
-           if input_content_p_xy[2] != input_content_p_xy[0] and input_content_p_xy[3] != input_content_p_xy[1]:
-               condition = True
-    return condition
+def has_armies(player, position):
+    if position in player.spearman:
+        return True, 'spearman'
+    elif position in player.archer:
+        return True, 'archer'
+    elif position in player.scout:
+        return True, 'scout'
+    elif position in player.knight:
+        return True, 'knight'
+    else:
+        return False, 'none'
 
-
-def available_destination():
-    armies_sak = player.spearman + player.archer + player.knight
-    armies_t = player.scout
-    good_destination = False
-    final_destination = False
-    for point in armies_sak:
-        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
-            if input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1:
-                good_destination = True
-                if good_destination and condition:
-                    final_destination = True
-                    if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
-
-    for point in armies_t:
-        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
-            if (input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1) \
-                or (input_content_p_xy[2] - input_content_p_xy[0] == 2 and input_content_p_xy[3] - in
-
-def army_type(player):
-    if input_content_p_xy[0] == player.spearman.x and input_content_p_xy[1] == player.spearman.y:
-         army_type="Spearman"
-    if input_content_p_xy[0] == player.archer.x and input_content_p_xy[1] == player.archer.y:
-         army_type="Archer"
-    if input_content_p_xy[0] == player.scout.x and input_content_p_xy[1] == player.scout.y:
-         army_type="Scout"
-    if input_content_p_xy[0] == player.knight.x and input_content_p_xy[1] == player.knight.y:
-         army_type="Knight"
-    return army_type
-
-def lose_armies(enemy):
-    lose_army=True
-    for point in BattleMap.waters:
-        if input_content_p_xy[2].x == BattleMap.waters.x and input_content_p_xy[3].y == BattleMap.waters.y:
-            lose_army=False
-    enemy_armies=enemy.spearman + enemy.archer + enemy.scout + enemy.knight
-    for point in enemy_armies:
-        if input_content_p_xy[2].x
 
 def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
     if show_player_msg:
@@ -540,12 +517,12 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
         print("No Army to Move: next turn\n")
     else:
         print("Armies to Move\n")
-        armies_info_show=""
+        armies_info_show = ""
         for army_type in ["Spearman", "Archer", "Knight", "Scout"]:
-            armies_info_show=armies_info_show + \
+            armies_info_show = armies_info_show + \
                 armies_info(player, army_type, player_already_move)
         print(armies_info_show)
-        input_content=input(
+        input_content = input(
             "\nEnter four integers as a format 'x0 y0 x1 y1' to represent move unit from (x0, y0) to (x1, y1) ir 'NO' to end this turn.\n")
         #-------------edge case------------------#
         if input_content == 'DIS':
@@ -558,54 +535,25 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
             return player, enemy, game_map
         #-------------positive case------------------#
         elif ' ' in input_content:
-            input_content_p_xy=input_content.split(' ')
+            input_content_p_xy = input_content.split(' ')
             if len(input_content_p_xy) == 4:
                 if input_content_p_xy[0].isdigit() and input_content_p_xy[1].isdigit() and input_content_p_xy[2].isdigit() and input_content_p_xy[3].isdigit():
-                    if has_armies_in_list and final_destination:
-                        print("You have moved {} from ({}, {}) to ({}, {}).".format(army_type, input_content_p_xy[0], input_content_p_xy[1], input_content_p_xy[2], input_content_p_xy[3]))
-                        if 
+                    start_position = Position(
+                        input_content_p_xy[0], input_content_p_xy[1])
+                    end_position = Position(
+                        input_content_p_xy[2], input_content_p_xy[3])
+                    # behave as move result
+                    available_destination, army_type = available_destination(
+                        start_position, end_position, game_map, player)
+                    #-------------behave as move result:valid move------------------#
+                    if available_destination:
+                        print("You have moved {} from ({}, {}) to ({}, {}).".format(
+                            army_type, start_position.x, start_position.y, end_position.x, end_position.y))
+
+                    #-------------behave as move result:invalid move---------------#
                     else:
-
-
-
-                    
-
-        # region
-        # 起始點 x0 y0 是否玩家為移動的兵中有此座標
-        # t: 有
-        #    已知道是什麼兵種
-        #     終點的有效條件
-        #     1.不可以相同
-        #     2.不可以再地圖外
-        #     3.不可以在自己的兵上
-        #     4.不可以在自己的基地
-        #     5.終點與起點只能差一步 （偵察兵 兩步）
-        #        t:
-        #             1.You have moved < Spearman/Archer/Knight/Scout > from (x0, y0) to(x1, y1).
-        #             2.move result
-        #                volid move 的條件
-        #                     1.踩到敵人基地
-        #                        1.問指揮官名字
-        #                         2.印出恭喜
-        #                         3.exist()
-        #                     2.兵死掉了
-        #                        1.只有他死掉
-        #                            player.spearman.remove((x0, y0))
-        #                         2.自己死掉敵人也死掉
-        #                            player.spearman.remove((x0, y0))
-        #                             enemy.spearman.remove((x0, y0))
-        #                     3.兵沒死
-        #                        1.到新的座標
-        #                            player.spearman[0]. x跟y改成新座標
-        #                             player_already_move.append(x1, y1)
-
-        #             3.move_stage(player, player_already_move, enemy, game_map,False)
-
-        #         f: Invalid move. Try again
-        #             move_stage(player, enemy, game_map, False)
-        # f: Invalid move. Try again
-        #     move_stage(player, enemy, game_map, False)
-        # endregion
+                        print("Invalid move. Try again.\n")
+        #-------------edge case------------------#
         elif input_content == 'NO':
             return player, enemy, game_map
         #-------------negative case---------------#
@@ -618,24 +566,24 @@ if __name__ == "__main__":
         print("Usage: python3 little_battle.py <filepath>")
         sys.exit()
     # -------- load config.txt -----------#
-    width, height, waters, woods, foods, golds=load_config_file(sys.argv[1])
+    width, height, waters, woods, foods, golds = load_config_file(sys.argv[1])
     print("Configuration file config.txt was loaded.")
     # -----------------------------------#
 
     # ----------Player initial-----------#
-    player1=Player("Player 1", 2, 2, 2,
+    player1 = Player("Player 1", 2, 2, 2,
                      [], [], [], [], Position(1, 1))
-    player2=Player("Player 2", 2, 2, 2,
+    player2 = Player("Player 2", 2, 2, 2,
                      [], [], [], [], Position(width-2, height-2))
     # -----------------------------------#
 
     # ----------Map initial-----------#
-    game_map=BattleMap(width, height, waters, woods,
+    game_map = BattleMap(width, height, waters, woods,
                          foods, golds, player1, player2)
     # -----------------------------------#
 
     # ----------Year initial-----------#
-    year=617
+    year = 617
     # -----------------------------------#
 
     # ----------<*Game Start*>-----------#
@@ -657,25 +605,77 @@ if __name__ == "__main__":
         # -----------------------------------#
 
         # ----------Player1 Stage_Recruit-----------#
-        player1, game_map=recruit_stage(
+        player1, game_map = recruit_stage(
             player1, player2, game_map, True)
         # -----------------------------------#
 
         # ----------Player1 Stage_Move-----------#
-        player1, player2, game_map=move_stage(
+        player1, player2, game_map = move_stage(
             player1, player2, game_map, [], True)
         # -----------------------------------#
 
         # ----------Player2 Stage_Recruit-----------#
-        player2, game_map=recruit_stage(
+        player2, game_map = recruit_stage(
             player2, player1, game_map, True)
         # -----------------------------------#
 
         # ----------Player2 Stage_Move-----------#
-        player2, player1, game_map=move_stage(
+        player2, player1, game_map = move_stage(
             player2, player1, game_map, [], True)
         # -----------------------------------#
 
         # ----------Year Pass-----------#
         year += 1
         # ------------------------------#
+
+
+# region
+
+# def army_type(player):
+#     if input_content_p_xy[0] == player.spearman.x and input_content_p_xy[1] == player.spearman.y:
+#         army_type = "Spearman"
+#     if input_content_p_xy[0] == player.archer.x and input_content_p_xy[1] == player.archer.y:
+#         army_type = "Archer"
+#     if input_content_p_xy[0] == player.scout.x and input_content_p_xy[1] == player.scout.y:
+#         army_type = "Scout"
+#     if input_content_p_xy[0] == player.knight.x and input_content_p_xy[1] == player.knight.y:
+#         army_type = "Knight"
+#     return army_type
+
+
+# def lose_armies(player_position, battle_map, player, enemy):
+
+#     lose_army = False
+#     for point in battle_map.waters:
+#         if player_position.x == point.x and player_position.y == point.y:
+#             lose_army = True
+#     for point in player
+
+#     enemy_armies = enemy.spearman + enemy.archer + enemy.scout + enemy.knight
+#     for point in enemy_armies:
+#         if input_content_p_xy[2].x
+
+
+# def lose_armies(enemy):
+#     lose_army = True
+#     for point in BattleMap.waters:
+#         if input_content_p_xy[2].x == BattleMap.waters.x and input_content_p_xy[3].y == BattleMap.waters.y:
+#             lose_army = False
+#     enemy_armies = enemy.spearman + enemy.archer + enemy.scout + enemy.knight
+#     for point in enemy_armies:
+#         if input_content_p_xy[2].x
+
+
+# def invalid_condition():
+#     condition = False
+#     if not has_armies_in_list and input_content_p_xy[2] != player.home.x and input_content_p_xy[3] != player.home.y:
+#         if input_content_p_xy[2] <= width or input_content_p_xy[3] <= height:
+#             if input_content_p_xy[2] != input_content_p_xy[0] and input_content_p_xy[3] != input_content_p_xy[1]:
+#                 condition = True
+#     return condition
+
+
+# def win():
+#     if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
+
+# endregion
