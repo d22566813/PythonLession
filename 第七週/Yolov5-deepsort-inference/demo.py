@@ -11,7 +11,7 @@ def main():
 
     name = 'demo'
 
-    det = Detector()
+    det = Detector(['person'])
     video = pafy.new(
         "https://www.youtube.com/watch?v=wCcMcaiRbhM&list=PL-Ni-1OtjEdLtQRpD-6r9AsD3P_6MLpgv&index=66")
     play = video.getbest(preftype="mp4")

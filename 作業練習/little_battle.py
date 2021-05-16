@@ -411,6 +411,64 @@ def armies_info(player, army_type, player_already_move):
     return armies_info
 
 
+def has_armies():
+    has_armies_in_list = False
+    armies_info = ""
+    armies += player.spearman + player.archer + player.scout + player.knight
+    for a in armies:
+        if a.x == input_content_p_xy[0] and a.y == input_content_p_xy[1]:
+            has_armies_in_list = True
+            break
+    return has_armies_in_list
+
+
+def invalid_condition():
+    condition = False
+    if not has_armies_in_list and input_content_p_xy[2] != player.home.x and input_content_p_xy[3] != player.home.y:
+        if input_content_p_xy[2] <= width or input_content_p_xy[3] <= height:
+           if input_content_p_xy[2] != input_content_p_xy[0] and input_content_p_xy[3] != input_content_p_xy[1]:
+               condition = True
+    return condition
+
+
+def available_destination():
+    armies_sak = player.spearman + player.archer + player.knight
+    armies_t = player.scout
+    good_destination = False
+    final_destination = False
+    for point in armies_sak:
+        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
+            if input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1:
+                good_destination = True
+                if good_destination and condition:
+                    final_destination = True
+                    if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
+
+    for point in armies_t:
+        if point.x == input_content_p_xy[2] and point.y == input_content_p_xy[3]:
+            if (input_content_p_xy[2] - input_content_p_xy[0] == 1 and input_content_p_xy[3] - input_content_p_xy[1] == 1) \
+                or (input_content_p_xy[2] - input_content_p_xy[0] == 2 and input_content_p_xy[3] - in
+
+def army_type(player):
+    if input_content_p_xy[0] == player.spearman.x and input_content_p_xy[1] == player.spearman.y:
+         army_type="Spearman"
+    if input_content_p_xy[0] == player.archer.x and input_content_p_xy[1] == player.archer.y:
+         army_type="Archer"
+    if input_content_p_xy[0] == player.scout.x and input_content_p_xy[1] == player.scout.y:
+         army_type="Scout"
+    if input_content_p_xy[0] == player.knight.x and input_content_p_xy[1] == player.knight.y:
+         army_type="Knight"
+    return army_type
+
+def lose_armies(enemy):
+    lose_army=True
+    for point in BattleMap.waters:
+        if input_content_p_xy[2].x == BattleMap.waters.x and input_content_p_xy[3].y == BattleMap.waters.y:
+            lose_army=False
+    enemy_armies=enemy.spearman + enemy.archer + enemy.scout + enemy.knight
+    for point in enemy_armies:
+        if input_content_p_xy[2].x
+
 def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
     if show_player_msg:
         print("==={}'s Stage: Move Armies===\n".format(player.name))
@@ -420,12 +478,12 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
         print("No Army to Move: next turn\n")
     else:
         print("Armies to Move\n")
-        armies_info_show = ""
+        armies_info_show=""
         for army_type in ["Spearman", "Archer", "Knight", "Scout"]:
-            armies_info_show = armies_info_show + \
+            armies_info_show=armies_info_show + \
                 armies_info(player, army_type, player_already_move)
         print(armies_info_show)
-        input_content = input(
+        input_content=input(
             "\nEnter four integers as a format 'x0 y0 x1 y1' to represent move unit from (x0, y0) to (x1, y1) ir 'NO' to end this turn.\n")
         #-------------edge case------------------#
         if input_content == 'DIS':
@@ -438,7 +496,7 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
             return player, enemy, game_map
         #-------------positive case------------------#
         elif ' ' in input_content:
-            input_content_p_xy = input_content.split(' ')
+            input_content_p_xy=input_content.split(' ')
             if len(input_content_p_xy) == 4:
                 if input_content_p_xy[0].isdigit() and input_content_p_xy[1].isdigit() and input_content_p_xy[2].isdigit() and input_content_p_xy[3].isdigit():
                     print("")
@@ -490,24 +548,24 @@ if __name__ == "__main__":
         print("Usage: python3 little_battle.py <filepath>")
         sys.exit()
     # -------- load config.txt -----------#
-    width, height, waters, woods, foods, golds = load_config_file(sys.argv[1])
+    width, height, waters, woods, foods, golds=load_config_file(sys.argv[1])
     print("Configuration file config.txt was loaded.")
     # -----------------------------------#
 
     # ----------Player initial-----------#
-    player1 = Player("Player 1", 2, 2, 2,
+    player1=Player("Player 1", 2, 2, 2,
                      [], [], [], [], Position(1, 1))
-    player2 = Player("Player 2", 2, 2, 2,
+    player2=Player("Player 2", 2, 2, 2,
                      [], [], [], [], Position(width-2, height-2))
     # -----------------------------------#
 
     # ----------Map initial-----------#
-    game_map = BattleMap(width, height, waters, woods,
+    game_map=BattleMap(width, height, waters, woods,
                          foods, golds, player1, player2)
     # -----------------------------------#
 
     # ----------Year initial-----------#
-    year = 617
+    year=617
     # -----------------------------------#
 
     # ----------<*Game Start*>-----------#
@@ -529,22 +587,22 @@ if __name__ == "__main__":
         # -----------------------------------#
 
         # ----------Player1 Stage_Recruit-----------#
-        player1, game_map = recruit_stage(
+        player1, game_map=recruit_stage(
             player1, player2, game_map, True)
         # -----------------------------------#
 
         # ----------Player1 Stage_Move-----------#
-        player1, player2, game_map = move_stage(
+        player1, player2, game_map=move_stage(
             player1, player2, game_map, [], True)
         # -----------------------------------#
 
         # ----------Player2 Stage_Recruit-----------#
-        player2, game_map = recruit_stage(
+        player2, game_map=recruit_stage(
             player2, player1, game_map, True)
         # -----------------------------------#
 
         # ----------Player2 Stage_Move-----------#
-        player2, player1, game_map = move_stage(
+        player2, player1, game_map=move_stage(
             player2, player1, game_map, [], True)
         # -----------------------------------#
 

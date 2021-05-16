@@ -8,8 +8,9 @@ from utils.BaseDetector import baseDet
 
 class Detector(baseDet):
 
-    def __init__(self):
+    def __init__(self, label):
         super(Detector, self).__init__()
+        self.label = label
         self.init_model()
         self.build_config()
 
@@ -64,7 +65,7 @@ class Detector(baseDet):
 
                 for *x, conf, cls_id in det:
                     lbl = self.names[int(cls_id)]
-                    if not lbl in ['person']:
+                    if not lbl in self.label:
                         continue
                     x1, y1 = int(x[0]), int(x[1])
                     x2, y2 = int(x[2]), int(x[3])

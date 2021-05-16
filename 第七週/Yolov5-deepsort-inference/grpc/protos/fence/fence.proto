@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+message FenceRequest {
+    int64 inside = 1;
+    bytes last_image = 2;
+    bytes this_image = 3;
+}
+
+message FenceResponse {
+    bool alert=1;
+    bytes algorithm_image = 2; 
+}
+
+service Fence {
+    rpc Fence(FenceRequest) returns (FenceResponse) {}
+}
+
+//message Stock {
+    // Stock-specific data
+//}
+
+//message Currency {
+    // Currency-specific data
+//}
+
+//message ChangeNotification {
+//  int32 id = 1;
+//  oneof instrument {
+//    Stock stock = 2;
+//    Currency currency = 3;
+//  }
+//}
