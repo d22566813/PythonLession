@@ -287,6 +287,7 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
     if show_player_msg:
         print("+++"+player.name+"'s Stage: Recruit Armies+++")
 
+    #-------------show player resource-------------#
     show_asstes(player)
     #-------------check resource is enough-------------#
     # region
@@ -384,7 +385,8 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
 
 def armies_info(player, army_type, player_already_move):  # show can move armies_info
     armies_info = ""
-    armies_count = 0
+    armies_first_for_no_comma = True
+
     armies = []
     if army_type == "Spearman":
         armies = player.spearman
@@ -396,17 +398,17 @@ def armies_info(player, army_type, player_already_move):  # show can move armies
         armies = player.knight
 
     for p in armies:
-        check = True
+        check_already_move = True
         for a_p in player_already_move:
             if p.x == a_p.x and p.y == a_p.y:
-                check = False
+                check_already_move = False
                 break
-        if check:
-            if armies_count == 0:
+        if check_already_move:
+            if armies_first_for_no_comma:
                 armies_info = armies_info+"({},{})".format(p.x, p.y)
             else:
                 armies_info = armies_info+", ({},{})".format(p.x, p.y)
-        armies_count += 1
+        armies_first_for_no_comma = False
     armies_info = "{}: {}\n".format(army_type, armies_info)
     return armies_info
 
