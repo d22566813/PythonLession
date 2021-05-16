@@ -413,7 +413,7 @@ def armies_info(player, army_type, player_already_move):
 
 def move_step_available(army_type, start, end):
     move_step = abs(end-start)
-    if army_type == 'scout':
+    if army_type == 'Scout':
         if not(move_step <= 2):
             return False
         else:
@@ -425,8 +425,8 @@ def move_step_available(army_type, start, end):
             return True
 
 
-def available_destination(start_position, end_position, battle_map, player_already_move, player, enemy):
-    has_armies, army_type, = has_armies(player, start_position)
+def available_destination(start_position, end_position, battle_map, player_already_move, player, enemy, year):
+    has_armies, army_type = has_armies(player, start_position)
     #  no army on that position
     if has_armies:
         return False, army_type
@@ -442,18 +442,41 @@ def available_destination(start_position, end_position, battle_map, player_alrea
     if end_position in armis:
         return False, army_type
 
+    #   go up or down
+    if start_position.x == end_position.x:
+        if move_step_available(army_type, end_position.y, start_position.y):
+            valid_move(year)
+            return True, army_type
+        else:
+            return False, army_type
+    #   go left or right
+    elif start_position.y == end_position.y:
+        if move_step_available(army_type, end_position.x, start_position.x):
+            valid_move(year)
+            return True, army_type
+        else:
+            return False, army_type
+    #   not diagonal
+    else:
+        return False, army_type
     # 每回合只能移動一次
+
+
 def spearman_lose(player, enemy):
     spearman = player.spearman
-    for 
+    for
     if player.spearman.x == enemy.knight.x and player.spearman.y == enemy.knight.y:
         spearman = spearman.remove
 
-        
 
-def valid_move(player, enemy, battle_map, ):
-    if 
+def win_msg(army_type, year):
+    print("The army {} captured the enemy’s capital.\n".format(army_type))
+    cmd_name = input("What’s your name, commander?\n")
+    print("***Congratulation! Emperor {} unified the country in {}.***\n".format(cmd_name, year))
+    exit()
 
+
+def move_result(step, battle_map, player, enemy):
     # 兵移動到水或是被克制的兵種
     # Scout 移動中間一步 也消失
     # 自己兵消失
@@ -468,57 +491,69 @@ def valid_move(player, enemy, battle_map, ):
     # 敵方兵消失
     # 印出 Great! We defeated the enemy <Spearman/Archer/Knight/Scout>!
 
-    # 兵移動到資源
-    # 資源消失
-    # Scout如兩步都蒐集到資源 印兩次
-    # 印出Good. We collected 2 <Wood/Food/Gold>.
+    #-------- win game status -------#
+    if enemy.home == step:
+        win_msg(army_type, year)
+    self.waters = waters
 
-    # 兵移動到敵人主堡
-    # 印出 The army <Spearman/Archer/Knight/Scout> captured the enemy’s capital.
-    # What’s your name, commander? 任何輸入當作名字
-    # 印出 ***Congratulation! Emperor <name> unified the country in <year>.***
-    # 結束遊戲
+    #-------- get resource status -------#
+    elif step in battle_map.woods:
+        player.wood = player.wood+2
+        battle_map.woods.remove(step)
+        print("Good. We collected 2 Wood.\n")
+    elif step in battle_map.foods:
+        player.food = player.food+2
+        battle_map.foods.remove(step)
+        print("Good. We collected 2 Food.\n")
+    elif step in battle_map.golds:
+        player.gold = player.gold+2
+        battle_map.golds.remove(step)
+        print("Good. We collected 2 Gold.\n")
 
-    #   go up or down
-    if start_position.x == end_position.x:
-        if move_step_available(army_type, end_position.y, start_position.y):
-            # 兵移動到敵人主堡
-            # 兵移動到資源
-            # 兵移動到克制兵種
-            # 兵移動到同兵種
-            # 兵移動到水或是被克制的兵種
 
-            # if army_type == "scout":
-
-            # else:
-            return True, army_type
+def valid_move(player, enemy, battle_map, army_type, start_position, end_position, year):
+    #-------- get all step ----------#
+    all_step = []
+    if army_type == "Scout":
+        if start_position.x == end_position.x:
+            move_step = abs(end_position.y-start_position.y)
+            if move_step == 2:
+                if end_position.y > start_position.y:
+                    all_step.append(
+                        Position(start_position.x, start_position.y+1))
+                else:
+                    all_step.append(
+                        Position(start_position.x, start_position.y-1))
         else:
-            return False, army_type
-    #   go left or right
-    elif start_position.y == end_position.y:
-        if move_step_available(army_type, end_position.x, start_position.x):
-            return True, army_type
-        else:
-            return False, army_type
-    #   not diagonal
-    else:
-        return False, army_type
+            move_step = abs(end_position.x-start_position.x)
+            if move_step == 2:
+                if end_position.x > start_position.x:
+                    all_step.append(
+                        Position(start_position.x+1, start_position.y))
+                else:
+                    all_step.append(
+                        Position(start_position.x-1, start_position.y))
+    all_step.append(end_position)
+
+    # ['第一步','第二步']
+    for step in all_step:
+        move_result(step)
 
 
 def has_armies(player, position):
     if position in player.spearman:
-        return True, 'spearman'
+        return True, 'Spearman'
     elif position in player.archer:
-        return True, 'archer'
+        return True, 'Archer'
     elif position in player.scout:
-        return True, 'scout'
+        return True, 'Knight'
     elif position in player.knight:
-        return True, 'knight'
+        return True, 'Scout'
     else:
         return False, 'none'
 
 
-def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
+def move_stage(player, enemy, game_map, player_already_move, show_player_msg, year):
     if show_player_msg:
         print("==={}'s Stage: Move Armies===\n".format(player.name))
 
@@ -554,7 +589,7 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg):
                         input_content_p_xy[2], input_content_p_xy[3])
                     # behave as move result
                     available_destination, army_type = available_destination(
-                        start_position, end_position, game_map, player)
+                        start_position, end_position, game_map, [], player, enemy, year)
                     #-------------behave as move result:valid move------------------#
                     if available_destination:
                         print("You have moved {} from ({}, {}) to ({}, {}).".format(
@@ -621,7 +656,7 @@ if __name__ == "__main__":
 
         # ----------Player1 Stage_Move-----------#
         player1, player2, game_map = move_stage(
-            player1, player2, game_map, [], True)
+            player1, player2, game_map, [], True, year)
         # -----------------------------------#
 
         # ----------Player2 Stage_Recruit-----------#
@@ -631,7 +666,7 @@ if __name__ == "__main__":
 
         # ----------Player2 Stage_Move-----------#
         player2, player1, game_map = move_stage(
-            player2, player1, game_map, [], True)
+            player2, player1, game_map, [], True, year)
         # -----------------------------------#
 
         # ----------Year Pass-----------#
