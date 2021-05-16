@@ -443,6 +443,16 @@ def available_destination(start_position, end_position, battle_map, player_alrea
         return False, army_type
 
     # 每回合只能移動一次
+def spearman_lose(player, enemy):
+    spearman = player.spearman
+    for 
+    if player.spearman.x == enemy.knight.x and player.spearman.y == enemy.knight.y:
+        spearman = spearman.remove
+
+        
+
+def valid_move(player, enemy, battle_map, ):
+    if 
 
     # 兵移動到水或是被克制的兵種
     # Scout 移動中間一步 也消失
