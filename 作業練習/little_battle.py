@@ -235,10 +235,10 @@ def load_config_file(filepath):  # loading map message by txt
 
 def show_recruit_price():  # show recruit price list
     print("Recruit Prices:")
-    print("  Spearman (S) -1W, 1F")
-    print("  Archer (A) -1W, 1G")
-    print("  Knight (K) -1F, 1G")
-    print("  Scout (T) -1W, 1F, 1G")
+    print("  Spearman (S) - 1W, 1F")
+    print("  Archer (A) - 1W, 1G")
+    print("  Knight (K) - 1F, 1G")
+    print("  Scout (T) - 1W, 1F, 1G")
 
 
 def show_year(year):  # show year each round need to show
@@ -246,7 +246,7 @@ def show_year(year):  # show year each round need to show
 
 
 def show_asstes(palyer):  # show player assets - Wood , Gold , Food
-    print("[Your Asset: Wood - {} Food - {} Gold - {}]\n".format(palyer.wood,
+    print("[Your Asset: Wood - {} Food - {} Gold - {}]".format(palyer.wood,
                                                                  palyer.food, palyer.gold))
 # endregion
 #-----------------------------------------#
@@ -257,14 +257,16 @@ def show_asstes(palyer):  # show player assets - Wood , Gold , Food
 def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, enemy, game_map):
     while True:
         input_content = input(
-            "You want to recruit a {}.Enter two integers as format 'x y' to place your army.\n".format(
+            "You want to recruit a {}. Enter two integers as format ‘x y’ to place your army.\n".format(
                 recruit_type)
         )
         #-------------edge case------------------#
         if input_content == 'DIS':
             game_map.draw_map()
+            print()
         elif input_content == 'PRIS':
             show_recruit_price()
+            print()
         elif input_content == 'QUIT':
             exit()
         #------------------positive case------------------#
@@ -315,10 +317,10 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, ene
                         "You must place your newly recruited unit in an unoccupied position next to your home base. Try again.\n")
             #-------------negative case---------------#
             else:
-                print("Sorry, invalid input Try again.\n")
+                print("Sorry, invalid input. Try again.\n")
         #-------------negative case---------------#
         else:
-            print("Sorry, invalid input Try again.\n")
+            print("Sorry, invalid input. Try again.\n")
 
 
 # check home 4 position is empty
@@ -338,17 +340,19 @@ def check_home_place_empty(armies, check_p, check_p_list):
 # recruit_stage return player_info,map_info
 def recruit_stage(player, enemy, game_map, show_player_msg):
     if show_player_msg:
-        print("+++"+player.name+"'s Stage: Recruit Armies+++")
+        print("+++"+player.name+"'s Stage: Recruit Armies+++\n")
 
-    #-------------show player resource-------------#
-    show_asstes(player)
+
     #-------------check resource is enough-------------#
     # region
     if (player.wood == 0 and player.food == 0) or (player.wood == 0 and player.gold == 0) or (player.gold == 0 and player.food == 0):
-        print('No resources to recruit any armies.')
+        show_asstes(player)
+        print('No resources to recruit any armies.\n')
         return player, game_map
     # endregion
-
+    #-------------show player resource-------------#
+    show_asstes(player)
+    print()
     #-------------check has place to recruit-------------#
     # region
     check_home_p = [
@@ -381,13 +385,15 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
     input_content = ""
     while input_content != 'NO':
         input_content = input(
-            "Which type of army to recruit, (enter) 'S', 'A', 'K', or 'T'? Ener 'NO' to end this stage.\n")
+            "Which type of army to recruit, (enter) ‘S’, ‘A’, ‘K’, or ‘T’? Enter ‘NO’ to end this stage.\n")
 
         #-------------edge case------------------#
         if input_content == 'DIS':
             game_map.draw_map()
+            print()
         elif input_content == 'PRIS':
             show_recruit_price()
+            print()
         elif input_content == 'QUIT':
             exit()
         elif input_content == 'NO':
@@ -399,6 +405,7 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
                 print("Insufficient resources. Try again.\n")
             #---------positive case----------#
             else:
+                print()
                 player, game_map = show_recruit_msg("Spearman", check_home_p,
                                                     check_p_empty_list, player, enemy, game_map)
                 return player, game_map
@@ -408,15 +415,17 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
                 print("Insufficient resources. Try again.\n")
             #---------positive case----------#
             else:
+                print()
                 player, game_map = show_recruit_msg("Archer", check_home_p,
                                                     check_p_empty_list, player, enemy, game_map)
-            return player, game_map
+                return player, game_map
         elif input_content == 'K':
             #------------edge case-----------#
             if player.gold == 0 or player.food == 0:
                 print("Insufficient resources. Try again.\n")
             #---------positive case----------#
             else:
+                print()
                 player, game_map = show_recruit_msg("Knight", check_home_p,
                                                     check_p_empty_list, player, enemy, game_map)
                 return player, game_map
@@ -426,12 +435,13 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
                 print("Insufficient resources. Try again.\n")
             #---------positive case----------#
             else:
+                print()
                 player, game_map = show_recruit_msg("Scout", check_home_p,
                                                     check_p_empty_list, player, enemy, game_map)
                 return player, game_map
         #-------------negative case---------------#
         else:
-            print("Sorry, invalid input Try again.\n")
+            print("Sorry, invalid input. Try again.\n")
     # endregion
 # endregion
 #-----------------------------------------#
@@ -445,14 +455,22 @@ def armies_info(player, army_type, player_already_move):  # show can move armies
     armies_first_for_no_comma = True
 
     armies = []
+    next_line = True
     if army_type == "Spearman":
         armies = player.spearman
+        if len(player.archer) == 0 and len(player.scout) == 0 and len(player.knight) == 0:
+            next_line = False
     elif army_type == "Archer":
         armies = player.archer
-    elif army_type == "Scout":
-        armies = player.scout
+        if len(player.scout) == 0 and len(player.knight) == 0:
+            next_line = False
     elif army_type == "Knight":
         armies = player.knight
+        if len(player.scout) == 0:
+            next_line = False
+    elif army_type == "Scout":
+        armies = player.scout
+        next_line = False
 
     for p in armies:
         check_already_move = True
@@ -462,11 +480,16 @@ def armies_info(player, army_type, player_already_move):  # show can move armies
                 break
         if check_already_move:
             if armies_first_for_no_comma:
-                armies_info = armies_info+"({},{})".format(p.x, p.y)
+                armies_info = armies_info+"({}, {})".format(p.x, p.y)
             else:
-                armies_info = armies_info+", ({},{})".format(p.x, p.y)
+                armies_info = armies_info+", ({}, {})".format(p.x, p.y)
             armies_first_for_no_comma = False
-    armies_info = "{}: {}\n".format(army_type, armies_info)
+    if armies_info != "":
+      if next_line:
+          armies_info = "  {}: {}\n".format(army_type, armies_info)
+      else:
+          armies_info = "  {}: {}".format(army_type, armies_info)
+
     return armies_info
 
 
@@ -659,7 +682,7 @@ def move_result(army_position, step, battle_map, player, enemy, army_type, playe
     if int(enemy.home.x) == int(step.x) and int(enemy.home.y) == int(step.y):
         print("The army {} captured the enemy’s capital.\n".format(army_type))
         cmd_name = input("What’s your name, commander?\n")
-        print("***Congratulation! Emperor {} unified the country in {}.***\n".format(cmd_name, year))
+        print("\n***Congratulation! Emperor {} unified the country in {}.***".format(cmd_name, year))
         exit()
     #-------- get resource status -------#
     elif check_position_in_array(step, battle_map.woods):
@@ -669,7 +692,9 @@ def move_result(army_position, step, battle_map, player, enemy, army_type, playe
         player = army_move(army_type, army_position, step, player)
         if step_count == 0:
             player_already_move.append(step)
-        print("Good. We collected 2 Wood.\n")
+            print("Good. We collected 2 Wood.\n")
+        else:
+            print("Good. We collected 2 Wood.")
     elif check_position_in_array(step, battle_map.foods):
         player.food = player.food+2
         battle_map.foods = remove_first_position_in_array(
@@ -677,7 +702,9 @@ def move_result(army_position, step, battle_map, player, enemy, army_type, playe
         player = army_move(army_type, army_position, step, player)
         if step_count == 0:
             player_already_move.append(step)
-        print("Good. We collected 2 Food.\n")
+            print("Good. We collected 2 Food.\n")
+        else:
+            print("Good. We collected 2 Food.")
     elif check_position_in_array(step, battle_map.golds):
         player.gold = player.gold+2
         battle_map.golds = remove_first_position_in_array(
@@ -685,7 +712,9 @@ def move_result(army_position, step, battle_map, player, enemy, army_type, playe
         player = army_move(army_type, army_position, step, player)
         if step_count == 0:
             player_already_move.append(step)
-        print("Good. We collected 2 Gold.\n")
+            print("Good. We collected 2 Gold.\n")
+        else:
+            print("Good. We collected 2 Gold.")
     #-------- meet water status -------#
     elif check_position_in_array(step, battle_map.waters):
         if army_type == 'Spearman':
@@ -756,22 +785,24 @@ def move_stage(player, enemy, game_map, show_player_msg, year):
             armies = remove_first_position_in_array(p, armies)
         #------------check player army exist----------#
         if len(armies) == 0:
-            print("No Army to Move: next turn\n")
+            print("No Army to Move: next turn.\n")
             return player, enemy, game_map
         else:
-            print("Armies to Move\n")
+            print("Armies to Move:")
             armies_info_show = ""
             for army_type in ["Spearman", "Archer", "Knight", "Scout"]:
                 armies_info_show = armies_info_show + \
                     armies_info(player, army_type, player_already_move)
             print(armies_info_show)
             input_content = input(
-                "\nEnter four integers as a format 'x0 y0 x1 y1' to represent move unit from (x0, y0) to (x1, y1) ir 'NO' to end this turn.\n")
+                "\nEnter four integers as a format ‘x0 y0 x1 y1’ to represent move unit from (x0, y0) to (x1, y1) or ‘NO’ to end this turn.\n")
             #-------------edge case------------------#
             if input_content == 'DIS':
                 game_map.draw_map()
+                print()
             elif input_content == 'PRIS':
                 show_recruit_price()
+                print()
             elif input_content == 'QUIT':
                 exit()
             elif input_content == 'NO':
@@ -790,7 +821,7 @@ def move_stage(player, enemy, game_map, show_player_msg, year):
                             start_position, end_position, game_map, player, enemy, year)
                         #-------------behave as move result:valid move------------------#
                         if available:
-                            print("You have moved {} from ({}, {}) to ({}, {}).\n".format(
+                            print("\nYou have moved {} from ({}, {}) to ({}, {}).".format(
                                 army_type, start_position.x, start_position.y, end_position.x, end_position.y))
 
                             player, enemy, game_map, player_already_move = valid_move(player, enemy, game_map, army_type,
@@ -798,14 +829,11 @@ def move_stage(player, enemy, game_map, show_player_msg, year):
                         #-------------behave as move result:invalid move---------------#
                         else:
                             print("Invalid move. Try again.\n")
+                else:
+                    print("Invalid move. Try again.\n")
             #-------------negative case---------------#
             else:
                 print("Invalid move. Try again.\n")
-
-
-# endregion
-#-----------------------------------------#
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -837,12 +865,12 @@ if __name__ == "__main__":
 
     # ----------Draw Map-----------#
     game_map.draw_map()
-    print("(enter DIS to display the map)\n\n")
+    print("(enter DIS to display the map)\n")
     # -----------------------------------#
 
     # ----------Show recruit price-----------#
     show_recruit_price()
-    print("(enter PRIS to display the price list)\n\n")
+    print("(enter PRIS to display the price list)\n")
     # -----------------------------------#
 
     while True:
@@ -861,10 +889,11 @@ if __name__ == "__main__":
         # -----------------------------------#
 
         # ----------Player2 Stage_Recruit-----------#
+        show_year(year)
         player2, game_map = recruit_stage(
             player2, player1, game_map, True)
         # -----------------------------------#
-
+        print()
         # ----------Player2 Stage_Move-----------#
         player2, player1, game_map = move_stage(
             player2, player1, game_map, True, year)
