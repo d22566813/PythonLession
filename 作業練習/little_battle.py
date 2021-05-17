@@ -656,7 +656,7 @@ def army_move(army_type, army_position, step, player):
 def move_result(army_position, step, battle_map, player, enemy, army_type, player_already_move, step_count):
     army_alive = True
     #-------- win game status -------#
-    if enemy.home == step:
+    if int(enemy.home.x) == int(step.x) and int(enemy.home.y) == int(step.y):
         print("The army {} captured the enemy’s capital.\n".format(army_type))
         cmd_name = input("What’s your name, commander?\n")
         print("***Congratulation! Emperor {} unified the country in {}.***\n".format(cmd_name, year))
@@ -746,11 +746,12 @@ def valid_move(player, enemy, battle_map, army_type, start_position, end_positio
     return player, enemy, battle_map, player_already_move
 
 
-def move_stage(player, enemy, game_map, player_already_move, show_player_msg, year):
+def move_stage(player, enemy, game_map, show_player_msg, year):
+    player_already_move = []
     if show_player_msg:
         print("==={}'s Stage: Move Armies===\n".format(player.name))
     while True:
-        armies = player.spearman+player.archer+player.archer+player.scout
+        armies = player.spearman+player.archer+player.knight+player.scout
         for p in player_already_move:
             armies = remove_first_position_in_array(p, armies)
         #------------check player army exist----------#
@@ -856,7 +857,7 @@ if __name__ == "__main__":
 
         # ----------Player1 Stage_Move-----------#
         player1, player2, game_map = move_stage(
-            player1, player2, game_map, [], True, year)
+            player1, player2, game_map, True, year)
         # -----------------------------------#
 
         # ----------Player2 Stage_Recruit-----------#
@@ -866,7 +867,7 @@ if __name__ == "__main__":
 
         # ----------Player2 Stage_Move-----------#
         player2, player1, game_map = move_stage(
-            player2, player1, game_map, [], True, year)
+            player2, player1, game_map, True, year)
         # -----------------------------------#
 
         # ----------Year Pass-----------#
