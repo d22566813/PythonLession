@@ -2,6 +2,9 @@ import sys
 
 # Please implement this function according to Section "Read Configuration File"
 
+#------------Game classes--------------#
+# region
+
 
 class BattleMap:
     def __init__(self, width, height, waters, woods, foods, golds, player1, player2):
@@ -41,7 +44,7 @@ class BattleMap:
             elif icon == 'T2':
                 assets = self.player2.scout
             for a in assets:
-                if a.x == x and a.y == y:
+                if int(a.x) == int(x) and int(a.y) == int(y):
                     h_s = h_s+icon
                     empty = False
                     break
@@ -105,6 +108,7 @@ class BattleMap:
         print(w_ys)
         print(h_s)
         print(w_ys)
+
         # endregion
 
 
@@ -125,6 +129,52 @@ class Player:
         self.knight = knight
         self.scout = scout
         self.home = home
+# endregion
+#-----------------------------------------#
+
+#------------common functions--------------#
+# region
+
+
+def replace_position_in_array(old_position, new_position, position_array):
+    i = 0
+    tmp_position_array = position_array
+    for p in position_array:
+        if(int(p.x) == int(old_position.x) and int(p.y) == int(old_position.y)):
+            tmp_position_array[i] = new_position
+        i += 1
+    return tmp_position_array
+
+
+def remove_first_position_in_array(remove_position, position_array):
+    i = 0
+    for p in position_array:
+        if(int(p.x) == int(remove_position.x) and int(p.y) == int(remove_position.y)):
+            del position_array[i]
+            return position_array
+        i += 1
+    return position_array
+
+
+def check_position_in_array(position, position_array):
+    for p in position_array:
+        if int(position.x) == int(p.x) and int(position.y) == int(p.y):
+            return True
+    return False
+
+
+def int_try_parse(value):  # return value (int or string), canParse or not (boolean)
+    try:
+        return int(value), True
+    except ValueError:
+        return value, False
+
+
+# endregion
+#-----------------------------------------#
+
+#-----------loading map functions----------#
+# region
 
 
 def set_assets(assets):  # help anaylize map txt fuction
@@ -176,6 +226,12 @@ def load_config_file(filepath):  # loading map message by txt
         f.close()
     return width, height, waters, woods, foods, golds
 
+# endregion
+#-----------------------------------------#
+
+#------------show msg functions------------#
+# region
+
 
 def show_recruit_price():  # show recruit price list
     print("Recruit Prices:")
@@ -192,16 +248,12 @@ def show_year(year):  # show year each round need to show
 def show_asstes(palyer):  # show player assets - Wood , Gold , Food
     print("[Your Asset: Wood - {} Food - {} Gold - {}]\n".format(palyer.wood,
                                                                  palyer.food, palyer.gold))
+# endregion
+#-----------------------------------------#
 
 
-def int_try_parse(value):  # return value (int or string), canParse or not (boolean)
-    try:
-        return int(value), True
-    except ValueError:
-        return value, False
-
-
-# enter recruit x y position use in recruit_stage
+#------------recruit stage functions-----------#
+# region
 def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, enemy, game_map):
     while True:
         input_content = input(
@@ -225,6 +277,7 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, ene
                 input_p = Position(input_x, input_y)
                 i = 0
                 check_place_success = False
+
                 for check in check_p_empty_list:
                     #-------------positive case---------------#
                     if check and input_p.x == check_home_p[i].x and input_p.y == check_home_p[i].y:
@@ -271,13 +324,13 @@ def show_recruit_msg(recruit_type, check_home_p, check_p_empty_list, player, ene
 # check home 4 position is empty
 def check_home_place_empty(armies, check_p, check_p_list):
     for p in armies:
-        if (p.x == check_p[0].x and p.y == check_p[0].y) and check_p_list[0]:
+        if (int(p.x) == int(check_p[0].x) and int(p.y) == int(check_p[0].y)) and check_p_list[0]:
             check_p_list[0] = False
-        if (p.x == check_p[1].x and p.y == check_p[1].y) and check_p_list[1]:
+        if (int(p.x) == int(check_p[1].x) and int(p.y) == int(check_p[1].y)) and check_p_list[1]:
             check_p_list[1] = False
-        if(p.x == check_p[2].x and p.y == check_p[2].y) and check_p_list[2]:
+        if(int(p.x) == int(check_p[2].x) and int(p.y) == int(check_p[2].y)) and check_p_list[2]:
             check_p_list[2] = False
-        if(p.x == check_p[3].x and p.y == check_p[3].y) and check_p_list[3]:
+        if(int(p.x) == int(check_p[3].x) and int(p.y) == int(check_p[3].y)) and check_p_list[3]:
             check_p_list[3] = False
     return check_p_list
 
@@ -309,7 +362,6 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
     #---------check player armies----------#
     armies = player.spearman+player.archer+player.knight+player.scout + \
         enemy.spearman+enemy.archer+enemy.knight+enemy.scout
-
     check_p_empty_list = check_home_place_empty(
         armies, check_home_p, check_p_empty_list)
 
@@ -381,6 +433,11 @@ def recruit_stage(player, enemy, game_map, show_player_msg):
         else:
             print("Sorry, invalid input Try again.\n")
     # endregion
+# endregion
+#-----------------------------------------#
+
+#------------move stage functions-----------#
+# region
 
 
 def armies_info(player, army_type, player_already_move):  # show can move armies_info
@@ -408,7 +465,7 @@ def armies_info(player, army_type, player_already_move):  # show can move armies
                 armies_info = armies_info+"({},{})".format(p.x, p.y)
             else:
                 armies_info = armies_info+", ({},{})".format(p.x, p.y)
-        armies_first_for_no_comma = False
+            armies_first_for_no_comma = False
     armies_info = "{}: {}\n".format(army_type, armies_info)
     return armies_info
 
@@ -426,13 +483,6 @@ def move_step_available(army_type, start, end):
             return True
         else:
             return False
-
-
-def check_position_in_array(position, position_array):
-    for p in position_array:
-        if int(position.x) == int(p.x) and int(position.y) == int(p.y):
-            return True
-    return False
 
 
 def has_armies_type(player, position):  # has_armies and return army type
@@ -461,7 +511,7 @@ def available_destination(start_position, end_position, battle_map, player, enem
     armis = player.spearman + player.archer + player.knight+player.scout
     #   not on home_base
     armis.append(player.home)
-    if end_position in armis:
+    if check_position_in_array(end_position, armis):
         return False, army_type
 
     #   go up or down
@@ -475,116 +525,135 @@ def available_destination(start_position, end_position, battle_map, player, enem
         return False, army_type
 
 
-def meet_solider_or_nothing(army_position, step, army_type, player, enemy, player_already_move):
+def meet_solider_or_nothing(army_position, step, army_type, player, enemy, player_already_move, step_count):
     army_alive = False
     # meet spearman
     if check_position_in_array(step, enemy.spearman):
+        enemy_type = "Spearman"
         if army_type == "Spearman":
-            player.spearman.remove(army_position)
-            enemy.spearman.remove(step)
-            print("We destroyed the enemy {} with massive loss!\n".format(army_type))
+            player.spearman = remove_first_position_in_array(
+                army_position, player.spearman)
+            enemy.spearman = remove_first_position_in_array(
+                step, enemy.spearman)
+            print("We destroyed the enemy {} with massive loss!\n".format(enemy_type))
         elif army_type == "Archer":
-            player.archer.replace(army_position, step)
-            enemy.spearman.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.archer = replace_position_in_array(
+                army_position, step, player.archer)
+            enemy.spearman = remove_first_position_in_array(
+                step, enemy.spearman)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
             army_alive = True
-            player_already_move.append(step)
+            if step_count == 0:
+                player_already_move.append(step)
         elif army_type == 'Knight':
-            player.knight.remove(army_position)
+            player.knight = remove_first_position_in_array(
+                army_position, player.knight)
             print("We lost the army {} due to your command!\n".format(army_type))
         elif army_type == 'Scout':
-            player.scout.remove(army_position)
+            player.scout = remove_first_position_in_array(
+                army_position, player.scout)
             print("We lost the army {} due to your command!\n".format(army_type))
     # meet archer
     elif check_position_in_array(step, enemy.archer):
+        enemy_type = "Archer"
         if army_type == "Spearman":
-            player.spearman.remove(army_position)
+            player.spearman = remove_first_position_in_array(
+                army_position, player.spearman)
             print("We lost the army {} due to your command!\n".format(army_type))
         elif army_type == "Archer":
-            player.archer.remove(army_position)
-            enemy.archer.remove(step)
-            print("We destroyed the enemy {} with massive loss!\n".format(army_type))
+            player.archer = remove_first_position_in_array(
+                army_position, player.archer)
+            enemy.archer = remove_first_position_in_array(step, enemy.archer)
+            print("We destroyed the enemy {} with massive loss!\n".format(enemy_type))
         elif army_type == 'Knight':
-            player.knight.replace(army_position, step)
-            enemy.archer.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.knight = replace_position_in_array(
+                army_position, step, player.knight)
+            enemy.archer = remove_first_position_in_array(step, enemy.archer)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
             army_alive = True
-            player_already_move.append(step)
+            if step_count == 0:
+                player_already_move.append(step)
         elif army_type == 'Scout':
-            player.scout.remove(army_position)
+            player.scout = remove_first_position_in_array(
+                army_position, player.scout)
             print("We lost the army {} due to your command!\n".format(army_type))
     # meet knight
     elif check_position_in_array(step, enemy.knight):
+        enemy_type = "Knight"
         if army_type == "Spearman":
-            player.spearman.replace(army_position, step)
-            enemy.knight.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.spearman = replace_position_in_array(
+                army_position, step, player.spearman)
+            enemy.knight = remove_first_position_in_array(step, enemy.knight)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
             army_alive = True
-            player_already_move.append(step)
+            if step_count == 0:
+                player_already_move.append(step)
         elif army_type == "Archer":
-            player.archer.remove(army_position)
+            player.archer = remove_first_position_in_array(
+                army_position, player.archer)
             print("We lost the army {} due to your command!\n".format(army_type))
         elif army_type == 'Knight':
-            player.knight.remove(army_position)
-            enemy.knight.remove(step)
-            print("We destroyed the enemy {} with massive loss!\n".format(army_type))
+            player.knight = remove_first_position_in_array(
+                army_position, player.knight)
+            enemy.knight = remove_first_position_in_array(step, enemy.knight)
+            print("We destroyed the enemy {} with massive loss!\n".format(enemy_type))
         elif army_type == 'Scout':
-            player.scout.remove(army_position)
+            player.scout = remove_first_position_in_array(
+                army_position, player.scout)
             print("We lost the army {} due to your command!\n".format(army_type))
     # meet scout
     elif check_position_in_array(step, enemy.scout):
+        enemy_type = "Scout"
         if army_type == "Spearman":
-            player.spearman.replace(army_position, step)
-            enemy.scout.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.spearman = replace_position_in_array(
+                army_position, step, player.spearman)
+            enemy.scout = remove_first_position_in_array(step, enemy.scout)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
             army_alive = True
-            player_already_move.append(step)
+            if step_count == 0:
+                player_already_move.append(step)
         elif army_type == "Archer":
-            player.archer.replace(army_position, step)
-            enemy.scout.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.archer = replace_position_in_array(
+                army_position, step, player.archer)
+            enemy.scout = remove_first_position_in_array(step, enemy.scout)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
         elif army_type == 'Knight':
-            player.knight.replace(army_position, step)
-            enemy.scout.remove(step)
-            print("Great! We defeated the enemy {}!\n".format(army_type))
+            player.knight = replace_position_in_array(
+                army_position, step, player.knight)
+            enemy.scout = remove_first_position_in_array(step, enemy.scout)
+            print("Great! We defeated the enemy {}!\n".format(enemy_type))
         elif army_type == 'Scout':
-            print("We destroyed the enemy {} with massive loss!".format(army_type))
-            player.scout.remove(army_position)
-            enemy.scout.remove(step)
+            print("We destroyed the enemy {} with massive loss!".format(enemy_type))
+            player.scout = remove_first_position_in_array(
+                army_position, player.scout)
+            enemy.scout = remove_first_position_in_array(step, enemy.scout)
     # notthiig
     else:
+        army_alive = True
         player = army_move(army_type, army_position, step, player)
-        player_already_move.append(step)
+        if step_count == 0:
+            player_already_move.append(step)
 
     return player, enemy, army_alive, player_already_move
-
-
-def replace_position_in_array(old_position, new_position, position_array):
-    i = 0
-    tmp_position_array = position_array
-    for p in position_array:
-        if(int(p.x) == int(old_position.x) and int(p.y) == int(old_position.y)):
-            tmp_position_array[i] = new_position
-            return tmp_position_array
-        i += 1
-    return tmp_position_array
 
 
 def army_move(army_type, army_position, step, player):
     if army_type == "Spearman":
         player.spearman = replace_position_in_array(
             army_position, step, player.spearman)
-        # player.spearman.replace(army_position, step)
     elif army_type == "Archer":
-        player.archer.replace(army_position, step)
+        player.archer = replace_position_in_array(
+            army_position, step, player.archer)
     elif army_type == 'Knight':
-        player.knight.replace(army_position, step)
+        player.knight = replace_position_in_array(
+            army_position, step, player.knight)
     elif army_type == 'Scout':
-        player.scout.replace(army_position, step)
+        player.scout = replace_position_in_array(
+            army_position, step, player.scout)
     return player
 
 
-def move_result(army_position, step, battle_map, player, enemy, army_type, player_already_move):
+def move_result(army_position, step, battle_map, player, enemy, army_type, player_already_move, step_count):
     army_alive = True
     #-------- win game status -------#
     if enemy.home == step:
@@ -593,40 +662,50 @@ def move_result(army_position, step, battle_map, player, enemy, army_type, playe
         print("***Congratulation! Emperor {} unified the country in {}.***\n".format(cmd_name, year))
         exit()
     #-------- get resource status -------#
-    elif step in battle_map.woods:
+    elif check_position_in_array(step, battle_map.woods):
         player.wood = player.wood+2
-        battle_map.woods.remove(step)
+        battle_map.woods = remove_first_position_in_array(
+            step, battle_map.woods)
         player = army_move(army_type, army_position, step, player)
-        player_already_move.append(step)
+        if step_count == 0:
+            player_already_move.append(step)
         print("Good. We collected 2 Wood.\n")
-    elif step in battle_map.foods:
+    elif check_position_in_array(step, battle_map.foods):
         player.food = player.food+2
-        battle_map.foods.remove(step)
+        battle_map.foods = remove_first_position_in_array(
+            step, battle_map.foods)
         player = army_move(army_type, army_position, step, player)
-        player_already_move.append(step)
+        if step_count == 0:
+            player_already_move.append(step)
         print("Good. We collected 2 Food.\n")
-    elif step in battle_map.golds:
+    elif check_position_in_array(step, battle_map.golds):
         player.gold = player.gold+2
-        battle_map.golds.remove(step)
+        battle_map.golds = remove_first_position_in_array(
+            step, battle_map.golds)
         player = army_move(army_type, army_position, step, player)
-        player_already_move.append(step)
+        if step_count == 0:
+            player_already_move.append(step)
         print("Good. We collected 2 Gold.\n")
     #-------- meet water status -------#
-    elif step in battle_map.waters:
+    elif check_position_in_array(step, battle_map.waters):
         if army_type == 'Spearman':
-            player.spearman.remove(army_position)
+            player.spearman = remove_first_position_in_array(
+                army_position, player.spearman)
         elif army_type == 'Archer':
-            player.archer.remove(army_position)
+            player.archer = remove_first_position_in_array(
+                army_position, player.archer)
         elif army_type == 'Knight':
-            player.knight.remove(army_position)
+            player.knight = remove_first_position_in_array(
+                army_position, player.knight)
         elif army_type == 'Scout':
-            player.scout.remove(army_position)
+            player.scout = remove_first_position_in_array(
+                army_position, player.scout)
         army_alive = False
         print("We lost the army {} due to your command!\n".format(army_type))
     #-------- meet solider or nothing -------#
     else:
         player, enemy, army_alive, player_already_move = meet_solider_or_nothing(
-            army_position, step, army_type, player, enemy, player_already_move)
+            army_position, step, army_type, player, enemy, player_already_move, step_count)
 
     return player, enemy, battle_map, army_alive, player_already_move
 
@@ -640,10 +719,10 @@ def valid_move(player, enemy, battle_map, army_type, start_position, end_positio
             if move_step == 2:
                 if end_position.y > start_position.y:
                     all_step.append(
-                        Position(start_position.x, start_position.y+1))
+                        Position(int(start_position.x), int(start_position.y)+1))
                 else:
                     all_step.append(
-                        Position(start_position.x, start_position.y-1))
+                        Position(int(start_position.x), int(start_position.y)-1))
         else:
             move_step = abs(int(end_position.x)-int(start_position.x))
             if move_step == 2:
@@ -655,11 +734,14 @@ def valid_move(player, enemy, battle_map, army_type, start_position, end_positio
                         Position(int(start_position.x)-1, int(start_position.y)))
     all_step.append(end_position)
     army_alive = True
+    i = 1
     #--------move_result-----------#
     for step in all_step:
         if army_alive:
             player, enemy, battle_map, army_alive, player_already_move = move_result(
-                start_position, step, battle_map, player, enemy, army_type, player_already_move)
+                start_position, step, battle_map, player, enemy, army_type, player_already_move, len(all_step)-i)
+        start_position = step
+        i = i+1
 
     return player, enemy, battle_map, player_already_move
 
@@ -668,14 +750,11 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg, ye
     if show_player_msg:
         print("==={}'s Stage: Move Armies===\n".format(player.name))
     while True:
-        tmp_player = player
+        armies = player.spearman+player.archer+player.archer+player.scout
         for p in player_already_move:
-            tmp_player.spearman.remove(p)
-            tmp_player.archer.remove(p)
-            tmp_player.knight.remove(p)
-            tmp_player.scout.remove(p)
+            armies = remove_first_position_in_array(p, armies)
         #------------check player army exist----------#
-        if len(tmp_player.spearman) == 0 and len(tmp_player.archer) == 0 and len(tmp_player.knight) == 0 and len(tmp_player.scout) == 0:
+        if len(armies) == 0:
             print("No Army to Move: next turn\n")
             return player, enemy, game_map
         else:
@@ -710,7 +789,7 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg, ye
                             start_position, end_position, game_map, player, enemy, year)
                         #-------------behave as move result:valid move------------------#
                         if available:
-                            print("You have moved {} from ({}, {}) to ({}, {}).".format(
+                            print("You have moved {} from ({}, {}) to ({}, {}).\n".format(
                                 army_type, start_position.x, start_position.y, end_position.x, end_position.y))
 
                             player, enemy, game_map, player_already_move = valid_move(player, enemy, game_map, army_type,
@@ -721,6 +800,10 @@ def move_stage(player, enemy, game_map, player_already_move, show_player_msg, ye
             #-------------negative case---------------#
             else:
                 print("Invalid move. Try again.\n")
+
+
+# endregion
+#-----------------------------------------#
 
 
 if __name__ == "__main__":
@@ -789,55 +872,3 @@ if __name__ == "__main__":
         # ----------Year Pass-----------#
         year += 1
         # ------------------------------#
-
-
-# region
-
-# def army_type(player):
-#     if input_content_p_xy[0] == player.spearman.x and input_content_p_xy[1] == player.spearman.y:
-#         army_type = "Spearman"
-#     if input_content_p_xy[0] == player.archer.x and input_content_p_xy[1] == player.archer.y:
-#         army_type = "Archer"
-#     if input_content_p_xy[0] == player.scout.x and input_content_p_xy[1] == player.scout.y:
-#         army_type = "Scout"
-#     if input_content_p_xy[0] == player.knight.x and input_content_p_xy[1] == player.knight.y:
-#         army_type = "Knight"
-#     return army_type
-
-
-# def lose_armies(player_position, battle_map, player, enemy):
-
-#     lose_army = False
-#     for point in battle_map.waters:
-#         if player_position.x == point.x and player_position.y == point.y:
-#             lose_army = True
-#     for point in player
-
-#     enemy_armies = enemy.spearman + enemy.archer + enemy.scout + enemy.knight
-#     for point in enemy_armies:
-#         if input_content_p_xy[2].x
-
-
-# def lose_armies(enemy):
-#     lose_army = True
-#     for point in BattleMap.waters:
-#         if input_content_p_xy[2].x == BattleMap.waters.x and input_content_p_xy[3].y == BattleMap.waters.y:
-#             lose_army = False
-#     enemy_armies = enemy.spearman + enemy.archer + enemy.scout + enemy.knight
-#     for point in enemy_armies:
-#         if input_content_p_xy[2].x
-
-
-# def invalid_condition():
-#     condition = False
-#     if not has_armies_in_list and input_content_p_xy[2] != player.home.x and input_content_p_xy[3] != player.home.y:
-#         if input_content_p_xy[2] <= width or input_content_p_xy[3] <= height:
-#             if input_content_p_xy[2] != input_content_p_xy[0] and input_content_p_xy[3] != input_content_p_xy[1]:
-#                 condition = True
-#     return condition
-
-
-# def win():
-#     if input_content_p_xy[2].x == player.home.x and input_content_p_xy[3].y == player.home.y:
-
-# endregion
