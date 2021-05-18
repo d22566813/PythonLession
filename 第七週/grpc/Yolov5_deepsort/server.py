@@ -33,6 +33,9 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
         # success, encoded_image = cv2.imencode(".jpg", track_result)
 
         self.detect.feedCap(image_array, self.func_status)
+
+        # image_array = cv2.resize(image_array, (960, 540))
+
         success, encoded_image = cv2.imencode(".jpg", image_array)
 
         img_bytes = encoded_image.tostring()
