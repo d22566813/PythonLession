@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message TrackRequest {
+    bytes image = 1;
+}
+
+message TrackResponse {
+    bytes algorithm_image = 1; 
+}
+
+service Track {
+    rpc Track(TrackRequest) returns (TrackResponse) {}
+}
