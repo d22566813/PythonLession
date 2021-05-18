@@ -44,27 +44,27 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
 
         # response 是個 FenceResponse 形態的 message
         response = track_pb2.TrackResponse()
-        image_np = img_to_numpy_arr(request.image)
+        # image_np = img_to_numpy_arr(request.image)
 
-        # image_array = cv2.imdecode(np.frombuffer(
-        #     request.image, np.uint8), -1)
+        image_array = cv2.imdecode(np.frombuffer(
+            request.image, np.uint8), -1)
 
         # track_result = self.detect.feedCap(image_array, self.func_status)
         # track_result = track_result['frame']
         # track_result = imutils.resize(track_result, height=500)
         # success, encoded_image = cv2.imencode(".jpg", track_result)
 
-        self.detect.feedCap(image_np, self.func_status, request.label)
+        self.detect.feedCap(image_array, self.func_status, request.label)
 
         # image_array = cv2.resize(image_array, (960, 540))
 
-        # success, encoded_image = cv2.imencode(".jpg", image_array)
+        success, encoded_image = cv2.imencode(".jpg", image_array)
 
-        # img_bytes = encoded_image.tostring()
+        img_bytes = encoded_image.tostring()
 
         # response.algorithm_image = img_bytes
 
-        response.algorithm_image = numpy_arr_to_img(image_np)
+        response.algorithm_image = img_bytes
 
         return response
 

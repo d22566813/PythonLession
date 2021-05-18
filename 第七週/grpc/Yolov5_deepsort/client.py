@@ -72,14 +72,15 @@ while True:
     request = track_pb2.TrackRequest(image=img_bytes, label=[
                                      "person"], detect_type="Fence", point_array=[{'x': 0, 'y': 940},
                                                                                   {'x': 1919, 'y': 940}])
-    # response = stub.Track(request)
+    response = stub.Track(request)
     # decoded = cv2.imdecode(np.frombuffer(
     #     response.algorithm_image, np.uint8), -1)
 
     # decoded = cv2.imdecode(np.frombuffer(
     #     img_bytes, np.uint8), -1)
 
-    # img_show = img_to_numpy_arr(img_byte)
+    # img_show = img_to_numpy_arr(img_bytes)
+
     now2 = time.time()
     print(now2-now)
     now = now2
