@@ -36,10 +36,10 @@ def plot_bboxes(image, bboxes, line_thickness=None):
     return image
 
 
-def update_tracker(target_detector, image):
+def update_tracker(target_detector, image, label):
 
     new_faces = []
-    _, bboxes = target_detector.detect(image)
+    _, bboxes = target_detector.detect(image, label)
 
     bbox_xywh = []
     confs = []

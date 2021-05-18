@@ -22,7 +22,7 @@ class baseDet(object):
 
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
-    def feedCap(self, im, func_status):
+    def feedCap(self, im, func_status, label):
 
         retDict = {
             'frame': None,
@@ -32,7 +32,7 @@ class baseDet(object):
         }
         self.frameCounter += 1
 
-        im, faces, face_bboxes = update_tracker(self, im)
+        im, faces, face_bboxes = update_tracker(self, im, label)
 
         retDict['frame'] = im
         retDict['faces'] = faces

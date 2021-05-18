@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0btrack.proto\"\x1d\n\x0cTrackRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"(\n\rTrackResponse\x12\x17\n\x0f\x61lgorithm_image\x18\x01 \x01(\x0c\x32\x31\n\x05Track\x12(\n\x05Track\x12\r.TrackRequest\x1a\x0e.TrackResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0btrack.proto\"^\n\x0cTrackRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\x12\r\n\x05label\x18\x02 \x03(\t\x12\x13\n\x0b\x64\x65tect_type\x18\x03 \x01(\t\x12\x1b\n\x0bpoint_array\x18\x04 \x03(\x0b\x32\x06.Point\"\x1d\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x03\x12\t\n\x01y\x18\x02 \x01(\x03\"(\n\rTrackResponse\x12\x17\n\x0f\x61lgorithm_image\x18\x01 \x01(\x0c\x32\x31\n\x05Track\x12(\n\x05Track\x12\r.TrackRequest\x1a\x0e.TrackResponse\"\x00\x62\x06proto3'
 )
 
 
@@ -40,6 +40,27 @@ _TRACKREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='label', full_name='TrackRequest.label', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='detect_type', full_name='TrackRequest.detect_type', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='point_array', full_name='TrackRequest.point_array', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -53,7 +74,46 @@ _TRACKREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=15,
-  serialized_end=44,
+  serialized_end=109,
+)
+
+
+_POINT = _descriptor.Descriptor(
+  name='Point',
+  full_name='Point',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='x', full_name='Point.x', index=0,
+      number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='y', full_name='Point.y', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=111,
+  serialized_end=140,
 )
 
 
@@ -84,11 +144,13 @@ _TRACKRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=46,
-  serialized_end=86,
+  serialized_start=142,
+  serialized_end=182,
 )
 
+_TRACKREQUEST.fields_by_name['point_array'].message_type = _POINT
 DESCRIPTOR.message_types_by_name['TrackRequest'] = _TRACKREQUEST
+DESCRIPTOR.message_types_by_name['Point'] = _POINT
 DESCRIPTOR.message_types_by_name['TrackResponse'] = _TRACKRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -98,6 +160,13 @@ TrackRequest = _reflection.GeneratedProtocolMessageType('TrackRequest', (_messag
   # @@protoc_insertion_point(class_scope:TrackRequest)
   })
 _sym_db.RegisterMessage(TrackRequest)
+
+Point = _reflection.GeneratedProtocolMessageType('Point', (_message.Message,), {
+  'DESCRIPTOR' : _POINT,
+  '__module__' : 'track_pb2'
+  # @@protoc_insertion_point(class_scope:Point)
+  })
+_sym_db.RegisterMessage(Point)
 
 TrackResponse = _reflection.GeneratedProtocolMessageType('TrackResponse', (_message.Message,), {
   'DESCRIPTOR' : _TRACKRESPONSE,
@@ -115,8 +184,8 @@ _TRACK = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=88,
-  serialized_end=137,
+  serialized_start=184,
+  serialized_end=233,
   methods=[
   _descriptor.MethodDescriptor(
     name='Track',
