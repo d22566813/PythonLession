@@ -7,30 +7,10 @@ from AIDetector_pytorch import Detector
 import numpy as np
 import cv2
 import imutils
+import mxnet as mx
+
 
 # 創建一個 HelloServicer，要繼承自 hello_pb2_grpc.HelloServicer
-
-
-def img_to_numpy_arr(mat_bytes):
-    """
-    圖片轉成Numpy陣列
-    """
-    nparr = np.frombuffer(mat_bytes, np.uint8)
-    # img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    return nparr
-
-
-def numpy_arr_to_img(arr):
-    """
-    Numpy陣列轉成圖片
-    """
-    pil_img = Image.fromarray(arr)
-    buff = BytesIO()
-    pil_img.save(buff, format="JPEG")
-
-    # img = base64.b64encode(buff.getvalue()).decode('utf-8')
-    # return img
-    return buff.getvalue()
 
 
 class TrackServicer(track_pb2_grpc.TrackServicer):
@@ -44,27 +24,27 @@ class TrackServicer(track_pb2_grpc.TrackServicer):
 
         # response 是個 FenceResponse 形態的 message
         response = track_pb2.TrackResponse()
-        # image_np = img_to_numpy_arr(request.image)
 
         image_array = cv2.imdecode(np.frombuffer(
             request.image, np.uint8), -1)
 
-        # track_result = self.detect.feedCap(image_array, self.func_status)
-        # track_result = track_result['frame']
-        # track_result = imutils.resize(track_result, height=500)
-        # success, encoded_image = cv2.imencode(".jpg", track_result)
+        # image_array = mx.image.imdecode(np.frombuffer(
+        #     request.image, np.uint8))
+        # image_array = image_array.asnumpy()
 
-        self.detect.feedCap(image_array, self.func_status, request.label)
+        image_array = self.detect.feedCap(
+            image_array, self.func_status, request.label)
+        image_array = image_array['frame']
 
-        # image_array = cv2.resize(image_array, (960, 540))
+        # image_array = imutils.resize(image_array, height=500)
 
         success, encoded_image = cv2.imencode(".jpg", image_array)
 
-        img_bytes = encoded_image.tostring()
-
-        # response.algorithm_image = img_bytes
+        img_bytes = encoded_image.tobytes()
 
         response.algorithm_image = img_bytes
+
+        # response.algorithm_image = request.image
 
         return response
 
