@@ -26,6 +26,7 @@ def format_check(content):
             check=False
     if not check:
         print("Invalid Configuration File: format error!")
+
     return check
 #endregion
 
@@ -142,13 +143,13 @@ def check_resource_not_out_of_map(word,resource_type,width,height):
             for a in word:
                 if check:
                     if p.x == "":
-                        if a >=0 and a<= width-1:
+                        if int(a) >=0 and int(a)<= int(width)-1:
                             p.x = int(a)
                         else:
                             check=False
                             print("Invalid Configuration File: {} contains a position that is out of map.".format(r))
                     elif p.y == "":
-                        if a >=0 and a<= height-1:
+                        if int(a) >=0 and int(a)<= int(height)-1:
                             p.y = int(a)
                             p = Position("", "")
                         else:
@@ -255,8 +256,7 @@ def load_config_file(filepath):  # loading map message by txt
         f = open(filepath, 'r')
         content = f.read() 
         #-------------loading test------------#
-        if format_check(content):
-            check=False
+        check=format_check(content)
         if check:
             check=format_error_check(content)
         if check:
@@ -298,11 +298,10 @@ def load_config_file(filepath):  # loading map message by txt
                     assets = word.split(" ")
                     golds = set_assets(assets)
             print("Configuration file config.txt was loaded.")
+            f.close()
     except IOError:
-        check=False
-        print("FileNotFoundError")
-    finally:
-        f.close()
+        print("FileNotFoundError")        
+    
     return width, height, waters, woods, foods, golds
 
 # endregion

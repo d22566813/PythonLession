@@ -39,10 +39,6 @@ def test_non_integer():
 
 def test_out_of_map():
     # add "out_of_map_file.txt" in "invalid_files"
-
-    # from the second line to the last line
-    # 標籤後的座標須在地圖內
-    # 印出 Invalid Configuration File: <line_name> contains a position that is out of map.
     load_config_file(folder_path+"out_of_map_file.txt")
     pass
 
@@ -50,10 +46,6 @@ def test_out_of_map():
 def test_occupy_home_or_next_to_home():
     # add two invalid files: "occupy_home_file.txt" and
     # "occupy_next_to_home_file.txt" in "invalid_files"
-
-    # from the second line to the last line
-    # 基地與基地四周不得有資源
-    # 印出 Invalid Configuration File: The positions of home bases or the positions next to the home bases are occupied!
     load_config_file(folder_path+"occupy_home_file.txt")
     load_config_file(folder_path+"occupy_next_to_home_file.txt")
     pass
@@ -62,10 +54,6 @@ def test_occupy_home_or_next_to_home():
 def test_duplicate_position():
     # add two files: "dupli_pos_in_single_line.txt" and
     # "dupli_pos_in_multiple_lines.txt" in "invalid_files"
-
-    # from the second line to the last line
-    # 資源的座標不得重複
-    # 印出 Invalid Configuration File: Duplicate position (x, y)!
     load_config_file(folder_path+"dupli_pos_in_single_line.txt")
     load_config_file(folder_path+"dupli_pos_in_multiple_lines.txt")
     pass
@@ -73,10 +61,6 @@ def test_duplicate_position():
 
 def test_odd_length():
     # add "odd_length_file.txt" in "invalid_files"
-
-    # from the second line to the last line
-    # 標籤後面的數字數量必須是偶數
-    # Invalid Configuration File: <line_name (e.g., Water)> has an odd number of elements!
     load_config_file(folder_path+"odd_length_file.txt")
     pass
 
