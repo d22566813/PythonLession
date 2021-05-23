@@ -6,8 +6,8 @@ from concurrent import futures
 from AIDetector_pytorch import Detector
 import numpy as np
 import cv2
-import imutils
-import mxnet as mx
+# import imutils
+# import mxnet as mx
 
 
 # 創建一個 HelloServicer，要繼承自 hello_pb2_grpc.HelloServicer

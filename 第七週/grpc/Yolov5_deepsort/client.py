@@ -5,12 +5,12 @@ import track_pb2
 import pafy
 import cv2
 import numpy as np
-from PIL import Image
-from io import BytesIO
-import base64
+# from PIL import Image
+from numba import jit
+# from io import BytesIO
+# import base64
 import time
 import threading
-import mxnet as mx
 
 
 class ipcamCapture:
@@ -69,6 +69,16 @@ ipcam = ipcamCapture('rtsp://171.25.232.14/37edec0a09174c639e21c9fc4cf9d9a1')
 # time.sleep(1)
 
 # cap = cv2.VideoCapture('rtsp://admin:evro0811@89.21.77.183:33556/')
+@jit(nopython=True)
+def im_encode(im):
+    success, encoded_image = cv2.imencode(".jpg", im)
+    img_bytes = encoded_image.tobytes()
+    return img_bytes
+@jit(nopython=True)
+def im_decode(im):
+    return cv2.imdecode(np.frombuffer(
+        im, np.uint8), -1)
+    
 
 now = time.time()
 while True:
@@ -84,14 +94,14 @@ while True:
     success, encoded_image = cv2.imencode(".jpg", im)
     img_bytes = encoded_image.tobytes()
 
+    # img_bytes=im_encode(im)
+
     request = track_pb2.TrackRequest(image=img_bytes, label=[
                                      "person"], detect_type="Fence", point_array=[{'x': 0, 'y': 940},
                                                                                   {'x': 1919, 'y': 940}])
     response = stub.Track(request)
 
-    # decoded = mx.image.imdecode(np.frombuffer(
-    #     response.algorithm_image, np.uint8))
-    # decoded = decoded.asnumpy()
+    # decoded=im_decode(response.algorithm_image)
 
     decoded = cv2.imdecode(np.frombuffer(
         response.algorithm_image, np.uint8), -1)

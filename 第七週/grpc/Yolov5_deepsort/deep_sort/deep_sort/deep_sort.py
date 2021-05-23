@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+
 from .deep.feature_extractor import Extractor
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.preprocessing import non_max_suppression
@@ -22,7 +23,7 @@ class DeepSort(object):
         nn_budget = 100
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
-
+    
     def update(self, bbox_xywh, confidences, ori_img):
         self.height, self.width = ori_img.shape[:2]
         # generate detections
@@ -69,7 +70,7 @@ class DeepSort(object):
         bbox_tlwh[:,1] = bbox_xywh[:,1] - bbox_xywh[:,3]/2.
         return bbox_tlwh
 
-
+ 
     def _xywh_to_xyxy(self, bbox_xywh):
         x,y,w,h = bbox_xywh
         x1 = max(int(x-w/2),0)
@@ -90,7 +91,7 @@ class DeepSort(object):
         y1 = max(int(y),0)
         y2 = min(int(y+h),self.height-1)
         return x1,y1,x2,y2
-
+   
     def _xyxy_to_tlwh(self, bbox_xyxy):
         x1,y1,x2,y2 = bbox_xyxy
 

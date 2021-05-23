@@ -26,6 +26,7 @@ class Detector(baseDet):
         self.names = model.module.names if hasattr(
             model, 'module') else model.names
 
+    
     def preprocess(self, img):
 
         img0 = img.copy()
@@ -42,6 +43,7 @@ class Detector(baseDet):
             img = img.unsqueeze(0)
 
         return img0, img
+        
 
     def detect(self, im, label):
 

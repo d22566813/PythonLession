@@ -3,6 +3,7 @@ from deep_sort.deep_sort import DeepSort
 import torch
 import cv2
 
+
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 cfg = get_config()
 cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
