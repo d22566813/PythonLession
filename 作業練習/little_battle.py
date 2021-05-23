@@ -1,9 +1,138 @@
 import sys
-
-
+ 
 # Please implement this function according to Section "Read Configuration File"
 #-----------loading map functions----------#
 # region
+def format_check(content):
+    check=True
+    content_array=content.splitlines(keepends=False)
+    if len(content_array)!=5:
+        check=False
+    else:
+        if not "Frame:" in content_array[0] and not "Water:" in content_array[1] and not "Wood:" in content_array[2] and not "Food:" in content_array[3] and not "Gold:" in content_array[4]:
+            check=False
+    if not check:
+        print("Invalid Configuration File: format error!")
+    return check
+
+
+def format_error_check(content):
+    check=True
+    content_array=content.splitlines(keepends=False)
+    
+    word = content_array[0].replace("Frame: ", "")
+    if "x" not in word:
+        check=False
+    else:
+        map_wh = word.split("x")
+        if(len(map_wh)==2):
+            width,width_isnumber=int_try_parse(map_wh[0])
+            height,height_isnumber=int_try_parse(map_wh[1])
+            if width_isnumber and height_isnumber:
+                check=True
+            else:
+                check=False
+        else:
+            check=False
+    if not check:
+        print("Invalid ConfigurationFile: frame should be in format widthxheight!")
+    return check
+    
+
+def frame_out_of_range_check(content):
+    check=True
+    content_array=content.splitlines(keepends=False)
+    word = content_array[0].replace("Frame: ", "")
+    map_wh = word.split("x")
+    width,width_isnumber=int_try_parse(map_wh[0])
+    height,height_isnumber=int_try_parse(map_wh[1])
+    if width<5 or width >7 or height<5 or height>7:
+        check=False
+    if not check:
+        print("Invalid Configuration File: width and height should range from 5 to 7!")
+    return check
+ 
+ 
+def remove_all_number_space(word):
+    word=word.replace(" ", "")
+    word=word.replace("0", "")
+    word=word.replace("1", "")
+    word=word.replace("2", "")
+    word=word.replace("3", "")
+    word=word.replace("4", "")
+    word=word.replace("5", "")
+    word=word.replace("6", "")
+    word=word.replace("7", "")
+    word=word.replace("8", "")
+    word=word.replace("9", "")
+    return word
+ 
+ 
+def non_integer_check(content):
+    check=True
+    word_type=""
+    for word in content.splitlines(keepends=False):
+        if "Water: " in word:
+            word_type="Water"
+            word = word.replace("Water: ", "")
+            word=remove_all_number_space(word)
+            if word!="":
+                check=False
+        elif "Wood: " in word:
+            word = word.replace("Wood: ", "")
+            word_type="Wood"
+            word = word.replace("Wood: ", "")
+            word=remove_all_number_space(word)
+            if word!="":
+                check=False
+        elif "Food: " in word:
+            word = word.replace("Food: ", "")
+            word_type="Food"
+            word = word.replace("Food: ", "")
+            word=remove_all_number_space(word)
+            if word!="":
+                check=False
+        elif "Gold: " in word:
+            word = word.replace("Gold: ", "")
+            word_type="Gold"
+            word = word.replace("Gold: ", "")
+            word=remove_all_number_space(word)
+            if word!="":
+                check=False
+    
+    if not check:
+        print("Invalid Configuration File: {} contains non integer characters!".format(word_type))
+    return check
+
+
+def out_of_map_check(content):
+    check=True
+    word_type=""
+    if not check:
+        print("Invalid Configuration File: <line_name> contains a position that is out of map.".format(word_type))
+    return check
+
+
+def occupy_home_or_next_to_home_check(content):
+    check=True
+    if not check:
+        print("Invalid Configuration File: The positions of home bases or the positions next to the home bases are occupied!")
+    return check
+
+
+def duplicate_position_check(content):
+    check=True
+    if not check:
+        print("Invalid Configuration File: Duplicate position (x, y)!")
+    return check
+
+
+def odd_length_check(content):
+    check=True
+    word_type=""
+    if not check:
+        print("Invalid Configuration File: {} has an odd number of elements!".format(word_type))
+    return check
 
 
 def set_assets(assets):  # help anaylize map txt fuction
@@ -24,32 +153,58 @@ def load_config_file(filepath):  # loading map message by txt
     # Complete the test driver of this function in file_loading_test.py
     width, height = 0, 0
     waters, woods, foods, golds = [], [], [], []  # list of position tuples
+    check=True
     try:
         f = open(filepath, 'r')
-        content = f.read()
-        for word in content.splitlines(keepends=False):
-            if "Frame: " in word:
-                word = word.replace("Frame: ", "")
-                map_wh = word.split("x")
-                width = int(map_wh[0])
-                height = int(map_wh[1])
-            elif "Water: " in word:
-                word = word.replace("Water: ", "")
-                assets = word.split(" ")
-                waters = set_assets(assets)
-            elif "Wood: " in word:
-                word = word.replace("Wood: ", "")
-                assets = word.split(" ")
-                woods = set_assets(assets)
-            elif "Food: " in word:
-                word = word.replace("Food: ", "")
-                assets = word.split(" ")
-                foods = set_assets(assets)
-            elif "Gold: " in word:
-                word = word.replace("Gold: ", "")
-                assets = word.split(" ")
-                golds = set_assets(assets)
+        content = f.read() 
+        #-------------loading test------------#
+        if format_check(content):
+            check=False
+        if check:
+            check=format_error_check(content)
+        if check:
+            check=frame_out_of_range_check(content)
+        if check:
+            check=non_integer_check(content)
+        #-------------練習----------------#
+        if check:
+            check=out_of_map_check(content)
+        if check:
+            check=occupy_home_or_next_to_home_check(content)
+        if check:
+            check=duplicate_position_check(content)
+        if check:
+            check=odd_length_check(content)
+        #-------------------------------#
+        #-------------------------------------#
+        
+        #---------- txt complete without err -----------#
+        if check:
+            for word in content.splitlines(keepends=False):
+                if "Frame: " in word:
+                    word = word.replace("Frame: ", "")
+                    map_wh = word.split("x")
+                    width = int(map_wh[0])
+                    height = int(map_wh[1])
+                elif "Water: " in word:
+                    word = word.replace("Water: ", "")
+                    assets = word.split(" ")
+                    waters = set_assets(assets)
+                elif "Wood: " in word:
+                    word = word.replace("Wood: ", "")
+                    assets = word.split(" ")
+                    woods = set_assets(assets)
+                elif "Food: " in word:
+                    word = word.replace("Food: ", "")
+                    assets = word.split(" ")
+                    foods = set_assets(assets)
+                elif "Gold: " in word:
+                    word = word.replace("Gold: ", "")
+                    assets = word.split(" ")
+                    golds = set_assets(assets)
+            print("Configuration file config.txt was loaded.")
     except IOError:
+        check=False
         print("FileNotFoundError")
     finally:
         f.close()
@@ -174,7 +329,7 @@ class Position:
         self.y = y
 
 class Player:
-    def __init__(self, name, woods, food, gold, spearman, archer, knight, scout, home):
+    def __init__(self, name, wood, food, gold, spearman, archer, knight, scout, home):
         self.name = name
         self.wood = wood
         self.food = food
@@ -844,7 +999,6 @@ if __name__ == "__main__":
         sys.exit()
     # -------- load config.txt -----------#
     width, height, waters, woods, foods, golds = load_config_file(sys.argv[1])
-    print("Configuration file config.txt was loaded.")
     # -----------------------------------#
 
     # ----------Player initial-----------#
