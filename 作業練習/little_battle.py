@@ -1,6 +1,63 @@
 import sys
 
+
 # Please implement this function according to Section "Read Configuration File"
+#-----------loading map functions----------#
+# region
+
+
+def set_assets(assets):  # help anaylize map txt fuction
+    p_list = []
+    p = Position("", "")
+    for a in assets:
+        if p.x == "":
+            p.x = int(a)
+        elif p.y == "":
+            p.y = int(a)
+            p_list.append(p)
+            p = Position("", "")
+    return p_list
+
+
+def load_config_file(filepath):  # loading map message by txt
+    # It should return width, height, waters, woods, foods, golds based on the file
+    # Complete the test driver of this function in file_loading_test.py
+    width, height = 0, 0
+    waters, woods, foods, golds = [], [], [], []  # list of position tuples
+    try:
+        f = open(filepath, 'r')
+        content = f.read()
+        for word in content.splitlines(keepends=False):
+            if "Frame: " in word:
+                word = word.replace("Frame: ", "")
+                map_wh = word.split("x")
+                width = int(map_wh[0])
+                height = int(map_wh[1])
+            elif "Water: " in word:
+                word = word.replace("Water: ", "")
+                assets = word.split(" ")
+                waters = set_assets(assets)
+            elif "Wood: " in word:
+                word = word.replace("Wood: ", "")
+                assets = word.split(" ")
+                woods = set_assets(assets)
+            elif "Food: " in word:
+                word = word.replace("Food: ", "")
+                assets = word.split(" ")
+                foods = set_assets(assets)
+            elif "Gold: " in word:
+                word = word.replace("Gold: ", "")
+                assets = word.split(" ")
+                golds = set_assets(assets)
+    except IOError:
+        print("FileNotFoundError")
+    finally:
+        f.close()
+    return width, height, waters, woods, foods, golds
+
+# endregion
+#-----------------------------------------#
+
 
 #------------Game classes--------------#
 # region
@@ -111,15 +168,13 @@ class BattleMap:
 
         # endregion
 
-
 class Position:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
-
 class Player:
-    def __init__(self, name, wood, food, gold, spearman, archer, knight, scout, home):
+    def __init__(self, name, woods, food, gold, spearman, archer, knight, scout, home):
         self.name = name
         self.wood = wood
         self.food = food
@@ -173,61 +228,6 @@ def int_try_parse(value):  # return value (int or string), canParse or not (bool
 # endregion
 #-----------------------------------------#
 
-#-----------loading map functions----------#
-# region
-
-
-def set_assets(assets):  # help anaylize map txt fuction
-    p_list = []
-    p = Position("", "")
-    for a in assets:
-        if p.x == "":
-            p.x = int(a)
-        elif p.y == "":
-            p.y = int(a)
-            p_list.append(p)
-            p = Position("", "")
-    return p_list
-
-
-def load_config_file(filepath):  # loading map message by txt
-    # It should return width, height, waters, woods, foods, golds based on the file
-    # Complete the test driver of this function in file_loading_test.py
-    width, height = 0, 0
-    waters, woods, foods, golds = [], [], [], []  # list of position tuples
-    try:
-        f = open(filepath, 'r')
-        content = f.read()
-        for word in content.splitlines(keepends=False):
-            if "Frame: " in word:
-                word = word.replace("Frame: ", "")
-                map_wh = word.split("x")
-                width = int(map_wh[0])
-                height = int(map_wh[1])
-            elif "Water: " in word:
-                word = word.replace("Water: ", "")
-                assets = word.split(" ")
-                waters = set_assets(assets)
-            elif "Wood: " in word:
-                word = word.replace("Wood: ", "")
-                assets = word.split(" ")
-                woods = set_assets(assets)
-            elif "Food: " in word:
-                word = word.replace("Food: ", "")
-                assets = word.split(" ")
-                foods = set_assets(assets)
-            elif "Gold: " in word:
-                word = word.replace("Gold: ", "")
-                assets = word.split(" ")
-                golds = set_assets(assets)
-    except IOError:
-        print("FileNotFoundError")
-    finally:
-        f.close()
-    return width, height, waters, woods, foods, golds
-
-# endregion
-#-----------------------------------------#
 
 #------------show msg functions------------#
 # region
@@ -834,6 +834,9 @@ def move_stage(player, enemy, game_map, show_player_msg, year):
             #-------------negative case---------------#
             else:
                 print("Invalid move. Try again.\n")
+
+#  endregion
+#-------------------------------------------#
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
