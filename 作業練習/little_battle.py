@@ -3,6 +3,19 @@ import sys
 # Please implement this function according to Section "Read Configuration File"
 #-----------loading map functions----------#
 # region
+
+#-------common function---------#
+def get_mp_width_height(content_array):
+    word = content_array[0].replace("Frame: ", "")
+    map_wh = word.split("x")
+    width,width_isnumber=int_try_parse(map_wh[0])
+    height,height_isnumber=int_try_parse(map_wh[1])
+    return width,height
+#-------------------------------#
+
+
+#------format_check------#
+#region
 def format_check(content):
     check=True
     content_array=content.splitlines(keepends=False)
@@ -14,8 +27,11 @@ def format_check(content):
     if not check:
         print("Invalid Configuration File: format error!")
     return check
+#endregion
 
 
+#------format_error_check------#
+#region
 def format_error_check(content):
     check=True
     content_array=content.splitlines(keepends=False)
@@ -37,22 +53,26 @@ def format_error_check(content):
     if not check:
         print("Invalid ConfigurationFile: frame should be in format widthxheight!")
     return check
-    
+#endregion
 
+
+#------frame_out_of_range_check------#
+#region
 def frame_out_of_range_check(content):
     check=True
     content_array=content.splitlines(keepends=False)
-    word = content_array[0].replace("Frame: ", "")
-    map_wh = word.split("x")
-    width,width_isnumber=int_try_parse(map_wh[0])
-    height,height_isnumber=int_try_parse(map_wh[1])
+    width,height=get_mp_width_height(content_array)
+    
     if width<5 or width >7 or height<5 or height>7:
         check=False
     if not check:
         print("Invalid Configuration File: width and height should range from 5 to 7!")
     return check
- 
- 
+ #endregion
+
+
+#------non_integer_check------#
+#region
 def remove_all_number_space(word):
     word=word.replace(" ", "")
     word=word.replace("0", "")
@@ -68,71 +88,148 @@ def remove_all_number_space(word):
     return word
  
  
+def check_resource_not_integer(word,resource_type):
+    check=True
+    for r in resource_type:
+        if r in word:
+            word = word.replace(r+": ", "")
+            word=remove_all_number_space(word)
+            if word!="":
+                check=False
+                print("Invalid Configuration File: {} contains non integer characters!".format(r))
+    return check
+     
+ 
 def non_integer_check(content):
     check=True
-    word_type=""
     for word in content.splitlines(keepends=False):
-        if "Water: " in word:
-            word_type="Water"
-            word = word.replace("Water: ", "")
-            word=remove_all_number_space(word)
-            if word!="":
-                check=False
-        elif "Wood: " in word:
-            word = word.replace("Wood: ", "")
-            word_type="Wood"
-            word = word.replace("Wood: ", "")
-            word=remove_all_number_space(word)
-            if word!="":
-                check=False
-        elif "Food: " in word:
-            word = word.replace("Food: ", "")
-            word_type="Food"
-            word = word.replace("Food: ", "")
-            word=remove_all_number_space(word)
-            if word!="":
-                check=False
-        elif "Gold: " in word:
-            word = word.replace("Gold: ", "")
-            word_type="Gold"
-            word = word.replace("Gold: ", "")
-            word=remove_all_number_space(word)
-            if word!="":
-                check=False
-    
-    if not check:
-        print("Invalid Configuration File: {} contains non integer characters!".format(word_type))
+        check=(check and check_resource_not_integer(word,["Water","Wood","Food","Gold"]))
     return check
+#endregion
 
 
-def out_of_map_check(content):
+#------odd_length_check------#
+#region
+def check_resource_number_not_odd(word,resource_type):
     check=True
-    word_type=""
-    if not check:
-        print("Invalid Configuration File: <line_name> contains a position that is out of map.".format(word_type))
-    return check
-
-
-def occupy_home_or_next_to_home_check(content):
-    check=True
-    if not check:
-        print("Invalid Configuration File: The positions of home bases or the positions next to the home bases are occupied!")
-    return check
-
-
-def duplicate_position_check(content):
-    check=True
-    if not check:
-        print("Invalid Configuration File: Duplicate position (x, y)!")
+    for r in resource_type:
+        if r in word:
+            word = word.replace(r+": ", "")
+            word=word.split(" ")
+            if len(word)%2!=0:
+                print("Invalid Configuration File: {} has an odd number of elements!".format(r))
+                check=False
     return check
 
 
 def odd_length_check(content):
     check=True
-    word_type=""
-    if not check:
-        print("Invalid Configuration File: {} has an odd number of elements!".format(word_type))
+    for word in content.splitlines(keepends=False):
+        check=(check and check_resource_number_not_odd(word,["Water","Wood","Food","Gold"]))
     return check
+#endregion
+
+
+#------out_of_map_check------#
+#region
+def check_resource_not_out_of_map(word,resource_type,width,height):
+    check=True
+    for r in resource_type:
+        if r in word:
+            word = word.replace(r+": ", "")
+            word=word.split(" ")
+            p = Position("", "")
+            for a in word:
+                if check:
+                    if p.x == "":
+                        if a >=0 and a<= width-1:
+                            p.x = int(a)
+                        else:
+                            check=False
+                            print("Invalid Configuration File: {} contains a position that is out of map.".format(r))
+                    elif p.y == "":
+                        if a >=0 and a<= height-1:
+                            p.y = int(a)
+                            p = Position("", "")
+                        else:
+                            check=False
+                            print("Invalid Configuration File: {} contains a position that is out of map.".format(r))         
+    return check
+
+
+def out_of_map_check(content):
+    check=True
+    content_array=content.splitlines(keepends=False)
+    width,height=get_mp_width_height(content_array)
+    for word in content_array:
+       check=(check and check_resource_not_out_of_map(word,["Water","Wood","Food","Gold"],width,height))
+    
+    return check
+#endregion
+
+
+#------occupy_home_or_next_to_home_check------#
+#region
+def get_resource_position(word,resource_type):
+    p_list=[]
+    for r in resource_type:
+        if r in word:
+            word = word.replace(r+": ", "")
+            word=word.split(" ")
+            p_list=set_assets(word)
+            
+    return p_list
+
+
+def occupy_home_or_next_to_home_check(content):
+    check=True
+    p_list=[]
+    content_array=content.splitlines(keepends=False)
+    width,height=get_mp_width_height(content_array)
+    player_home = Position(1, 1)
+    player2_home = Position(width-2, height-2)
+    check_home_p = [
+        player_home,
+        Position(player_home.x-1, player_home.y),
+        Position(player_home.x+1, player_home.y),
+        Position(player_home.x, player_home.y+1),
+        Position(player_home.x, player_home.y-1),
+        player2_home,
+        Position(player2_home.x-1, player2_home.y),
+        Position(player2_home.x+1, player2_home.y),
+        Position(player2_home.x, player2_home.y+1),
+        Position(player2_home.x, player2_home.y-1),
+    ]
+    for word in content_array:
+        p_list=p_list+get_resource_position(word,["Water","Wood","Food","Gold"])
+
+    for p in p_list:
+        for h in check_home_p:
+            if int(h.x)==int(p.x) and int(h.y)==int(p.y):
+                print("Invalid Configuration File: The positions of home bases or the positions next to the home bases are occupied!")
+                return False
+        
+    return check
+#endregion
+
+
+#------duplicate_position_check------#
+#region
+def duplicate_position_check(content):
+    check=True
+    p_list=[]
+    content_array=content.splitlines(keepends=False)
+    for word in content_array:
+        p_list=p_list+get_resource_position(word,["Water","Wood","Food","Gold"])
+          
+    p_length=len(p_list)
+    for i in range(p_length):
+        for j in range(p_length):
+            if int(p_list[i].x)==int(p_list[j].x) and int(p_list[i].y)==int(p_list[j].y) and i!=j:
+                print("Invalid Configuration File: Duplicate position (x, y)!")
+                return False    
+    return check
+#endregion
 
 
 def set_assets(assets):  # help anaylize map txt fuction
@@ -166,16 +263,14 @@ def load_config_file(filepath):  # loading map message by txt
             check=frame_out_of_range_check(content)
         if check:
             check=non_integer_check(content)
-        #-------------練習----------------#
+        if check:
+            check=odd_length_check(content)
         if check:
             check=out_of_map_check(content)
         if check:
             check=occupy_home_or_next_to_home_check(content)
         if check:
             check=duplicate_position_check(content)
-        if check:
-            check=odd_length_check(content)
-        #-------------------------------#
         #-------------------------------------#
         
         #---------- txt complete without err -----------#

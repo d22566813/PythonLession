@@ -15,38 +15,24 @@ def test_file_not_found():
 
 def test_format_error():
     # add "format_error_file.txt" in "invalid_files"
-
-    # 5行
-    # 要求的標籤
-    # 印出 Invalid Configuration File: format error!
     load_config_file(folder_path+"format_error_file.txt")
     pass
 
 
 def test_frame_format_error():
     # add "frame_format_error_file.txt" in "invalid_files"
-
-    # Frame: 需要符合 widthxheight
-    # 印出 Invalid ConfigurationFile: frame should be in format widthxheight!
     load_config_file(folder_path+"frame_format_error_file.txt")
     pass
 
 
 def test_frame_out_of_range():
     # add "format_out_of_range_file.txt" in "invalid_files"
-
-    # Frame: 長寬須在5-7之間
-    # 印出 Invalid Configuration File: width and height should range from 5 to 7!
     load_config_file(folder_path+"format_out_of_range_file.txt")
     pass
 
 
 def test_non_integer():
     # add "non_integer_file.txt" in "invalid_files"
-
-    # from the second line to the last line
-    # 須符合標籤後一定要是interger
-    # 印出 Invalid Configuration File: <line_name> (e.g., Water) contains non integer characters!
     load_config_file(folder_path+"non_integer_file.txt")
     pass
 
